@@ -6,9 +6,9 @@ class MustReturnBool(VirtualSetException):
     pass
 
 
-class MustBeTypeOrSome(VirtualSetException):
+class InvalidArgument(VirtualSetException):
     pass
 
 
-class InvalidValidatorFunction(VirtualSetException):
+class InvalidFunction(InvalidArgument):
     pass
