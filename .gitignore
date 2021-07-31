@@ -1,0 +1,13 @@
+*.pyc
+*.pyo
+.DS_Store
+.idea
+.vscode/
+__pycache__
+venv
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+Pipfile*
+ignore.*
