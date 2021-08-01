@@ -1,8 +1,6 @@
 import unittest
 
-from pysome import VSet, Some
-from pysome.Some import SomeList, SomePartialDict
-from pysome.expect import expect
+from pysome import VSet, Some, SomeList, SomePartialDict, expect
 
 
 class TestExpect(unittest.TestCase):
@@ -50,7 +48,6 @@ class TestExpect(unittest.TestCase):
                     "items": SomeList(str, int)
                 }
             })
-
 
         response = {
             "menu": {

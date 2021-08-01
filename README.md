@@ -4,6 +4,10 @@
 `PySome` brings the `expect(...).to_be(...)` syntax to python for
 easier and clearer testing of nested objects
 
+### Installation
+
+`pip install pysome`
+
 ### Example:
 ```python
 from pysome import Some
