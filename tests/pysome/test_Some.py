@@ -1,9 +1,9 @@
 import unittest
 from collections import Iterable
 
-from virtualset import VSet, Some
-from virtualset.Exceptions import *
-from virtualset.Some import has_len, is_in, AllOf, SomeIterable, SomeList, SomeDict, SomePartialDict
+from pysome import VSet, Some
+from pysome.Exceptions import *
+from pysome.Some import has_len, is_in, AllOf, SomeIterable, SomeList, SomeDict, SomePartialDict
 
 
 class SomeTests(unittest.TestCase):

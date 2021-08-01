@@ -1,8 +1,8 @@
 import unittest
 
-from virtualset import VSet, Some
-from virtualset.Some import SomeList, SomePartialDict
-from virtualset.expect import expect
+from pysome import VSet, Some
+from pysome.Some import SomeList, SomePartialDict
+from pysome.expect import expect
 
 
 class TestExpect(unittest.TestCase):

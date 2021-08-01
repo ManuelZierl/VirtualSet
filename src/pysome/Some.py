@@ -2,7 +2,7 @@ import inspect
 from collections import Iterable
 from typing import Union, Callable, Any
 
-from virtualset.Exceptions import *
+from pysome.Exceptions import *
 
 
 class Some:
