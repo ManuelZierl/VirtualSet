@@ -1,9 +1,8 @@
 import unittest
 from collections import Iterable
 
-from pysome import VSet, Some
+from pysome import *
 from pysome.Exceptions import *
-from pysome.Some import has_len, is_in, AllOf, SomeIterable, SomeList, SomeDict, SomePartialDict
 
 
 class SomeTests(unittest.TestCase):
@@ -97,6 +96,15 @@ class AllOfTests(unittest.TestCase):
         self.assertTrue(AllOf(tuple, sum_is_5, has_len(2)) == (0, 5))
 
 
+class SomeOrNoneTests(unittest.TestCase):
+    def test_basics(self):
+        self.assertTrue(SomeOrNone() == 3)
+        self.assertTrue(SomeOrNone() == None)
+        self.assertTrue(SomeOrNone(int) == None)
+        self.assertTrue(SomeOrNone(int) != "ab")
+        self.assertTrue(SomeOrNone(str) == "ab")
+
+
 class SomeIterableTests(unittest.TestCase):
     def test_basics(self):
         self.assertTrue(SomeIterable() == [4, "a", 3])
@@ -160,16 +168,20 @@ class SomeDictTests(unittest.TestCase):
         self.assertTrue(SomeDict() == {"a": 12, "b": 42})
         self.assertTrue(SomeDict() != {"a", "b", 42})
 
+        self.assertTrue(SomeDict() == {})
+        self.assertTrue(SomeDict() == {"a": 12, "b": 42})
+        self.assertTrue(SomeDict({"a": 12}) == {"a": 12, "b": 42})
+        self.assertTrue(SomeDict({"a": 11}) != {"a": 12, "b": 42})
+        self.assertTrue(SomeDict({"a": 12, "b": 42}) == {"a": 12, "b": 42})
+        self.assertTrue(SomeDict({"a": 12, "c": 42}) != {"a": 12, "b": 42})
 
-class SomePartialDictTests(unittest.TestCase):
-    def test_basics(self):
-        self.assertTrue(SomePartialDict() == {})
-        self.assertTrue(SomePartialDict() == {"a": 12, "b": 42})
-        self.assertTrue(SomePartialDict({"a": 12}) == {"a": 12, "b": 42})
-        self.assertTrue(SomePartialDict({"a": 11}) != {"a": 12, "b": 42})
-        self.assertTrue(SomePartialDict({"a": 12, "b": 42}) == {"a": 12, "b": 42})
-        self.assertTrue(SomePartialDict({"a": 12, "c": 42}) != {"a": 12, "b": 42})
+        self.assertTrue(SomeDict(a=12) == {"a": 12, "b": 42})
+        self.assertTrue(SomeDict(b=42) == {"a": 12, "b": 42})
+        self.assertTrue(SomeDict(a=12, b=42) == {"a": 12, "b": 42})
+        self.assertTrue(SomeDict(a=12, c=42) != {"a": 12, "b": 42})
 
+        with self.assertRaises(InvalidArgument):
+            _ = SomeDict(12)
 
 
 class TestHasLen(unittest.TestCase):

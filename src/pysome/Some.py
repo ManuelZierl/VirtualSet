@@ -19,6 +19,8 @@ class Some:
     True
     >>> Some(int) == "abc"
     False
+    >>> Some(int) == None
+    False
     """
     def __init__(self, *args: Union[type, Callable, "Some"]):
         self.types = []
@@ -80,6 +82,34 @@ class AllOf(Some):
         super().__init__(validate_all)
 
 
+# Todo SomeOrNone()
+# works exactly like Some but is also true for SomeOrNone() == None
+class SomeOrNone(Some):
+    # todo: testcas
+    """
+    Works exactly like Some() but also equals None
+
+    examples:
+    >>> SomeOrNone() == ...
+    True
+    >>> SomeOrNone(int) == 1
+    True
+    >>> SomeOrNone(str, int) == 21
+    True
+    >>> SomeOrNone(int) == "abc"
+    False
+    >>> SomeOrNone(int) == None
+    True
+    """
+    def __init__(self, *args: Union[type, Callable, "Some"]):
+        def is_none(x):
+            return x is None
+        if args:
+            super().__init__(*args, is_none)
+        else:
+            super().__init__()
+
+
 class SomeIterable(Some):
     """
     SomeIterable equals all iterable objects that are equal to its given arguemnts
@@ -125,8 +155,10 @@ class SomeList(SomeIterable):
         super().__init__(*args, length=length, is_type=list)
 
 
+# TODO: SomeTuple(SomeIterable)
+
+
 class SomeDict(Some):
-    # todo: test
     """
     SomeDict is equal to any dict
 
@@ -137,56 +169,51 @@ class SomeDict(Some):
     True
     >>> SomeDict() == 12
     False
-    """
-    def __init__(self):
-        super().__init__(dict)
-
-
-class SomePartialDict(Some):
-    # todo: test
-    """
-    SomePartialDict is equal to any dict that contains all keys and values that are given as a dict as argument
-
-    examples
-    >>> SomePartialDict({"a": 1}) == {"a": 1, "b": 2}
+    >>> SomeDict(a=Some(dict)) == {"a": {"a1": 1, "a2": 2}, "b": 3}
     True
-    >>> SomePartialDict({"a": 2}) == {"a": 1, "b": 2}
+    >>> SomeDict({"a": Some(dict)}) == {"a": {"a1": 1, "a2": 2}, "b": 3}
+    True
+    >>> SomeDict({"a": Some(int)}) == {"a": {"a1": 1, "a2": 2}, "b": 3}
     False
     """
-    def __init__(self, arg=None):
-        if arg is None:
-            arg = {}
 
-        def some_partial_dict_validator(other):
-            if not isinstance(arg, dict):
+    def __init__(self, partial_dict: dict = None, **kwargs):
+        if partial_dict is None:
+            partial_dict = {}
+        if not isinstance(partial_dict, dict):
+            raise InvalidArgument("SomeDict except either dict or **kwargs")
+        partial_dict = dict(partial_dict, **kwargs)
+
+        def some_dict_validator(other):
+            if not isinstance(other, dict):
                 return False
-            return all(item in other.items() for item in arg.items())
+            for key, value in partial_dict.items():
+                if not other.get(key, None) == value:
+                    return False
+            return True
 
-        super().__init__(some_partial_dict_validator)
+        super().__init__(some_dict_validator)
 
 
-# TODO: SOMES
-# TODO: SomeStrict()
-# TODO: SomeTuple(SomeIterator)
-# TODO: SomeSet(SomeIterator)
-# TODO: SomeCallable()
-# TODO: SomeIn()
-# TODO: SomeEmail()
-# TODO: NotSome()
-# TODO: AllOf()? other name but instead of one validator must be true all must be true
-# TODO: SomeStr(regex=, pattern=Hal_o W__t, endswith=, startswith=)
-# TODO: SomeNumber(min=, max=) -> Some(int, float, long...?)
+# TODO: SomeSet(SomeIterable)
 
-class has_len(Some):
+# TODO: class SomeStrict(Some):
+
+# TODO: SomeCallable() -> is_callable
+
+# TODO: SomeIn() -> is_in()
+
+
+class SomeWithLen(Some):
     """
-    is true if other is in the given container
+    SomeWithLen quals every object that has same length
 
     examples:
-    >>> has_len(2) == [1, 2]
+    >>> SomeWithLen(2) == [1, 2]
     True
-    >>> has_len(0) == []
+    >>> SomeWithLen(0) == []
     True
-    >>> has_len(2) == (1, )
+    >>> SomeWithLen(2) == (1, )
     False
     """
 
@@ -206,6 +233,19 @@ class has_len(Some):
             return True
 
         super().__init__(len_validator)
+
+
+# TODO: NotSome() -> is_not()
+
+
+# TODO: SomeStr(regex=, pattern=Hal_o W__t, endswith=, startswith=)
+
+
+# TODO: SomeNumber(min=, max=) -> Some(int, float, long...?)
+
+
+# alias names
+has_len = SomeWithLen
 
 
 class is_in(Some):

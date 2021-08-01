@@ -10,9 +10,7 @@ easier and clearer testing of nested objects
 
 ### Example:
 ```python
-from pysome import Some
-from pysome.Some import SomeList, SomePartialDict
-from pysome.expect import expect
+from pysome import Some, SomeList, SomeDict, expect
 # some large nested api response you want to test
 api_response = {
     "menu": {
@@ -25,12 +23,36 @@ api_response = {
     }
 }
 
-# test only for needed stuff
+# test only important stuff
 expect(api_response).to_be({
     "menu": {
-        "tags": SomeList(SomePartialDict({
-            "id": Some(int)
-        }))
+        "tags": SomeList(
+            SomeDict(id=Some(int))
+        )
     }
 })
 ```
+
+### Some API
+| name  | alias  | description  |
+|---            |---|---|
+| [Some](#Some) |   |   |
+| AllOf         |   |   |
+| SomeOrNone    |   |   |
+| SomeIterable  |   |   |
+| SomeList      |   |   |
+| SomeTuple     |   |   |
+| SomeDict      |   |   |
+| SomeSet       |   |   |
+| SomeStrict    |   |   |
+| SomeCallable  |   |   |
+| SomeIn        |   |   |
+| SomeWithLen   |   |   |
+| NotSome       |   |   |
+| SomeStr       |   |   |
+| SomeNumber    |   |   |
+
+#### <a name="Some"></a>Some
+todo:
+
+

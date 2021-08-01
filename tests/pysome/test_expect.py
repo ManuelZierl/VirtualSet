@@ -1,6 +1,6 @@
 import unittest
 
-from pysome import VSet, Some, SomeList, SomePartialDict, expect
+from pysome import *
 
 
 class TestExpect(unittest.TestCase):
@@ -90,7 +90,7 @@ class TestExpect(unittest.TestCase):
 
     def test_partial_dict(self):
         response = {
-            "menue": {
+            "menu": {
                 "tags": [
                     {"id": 1, "z-index": 12},
                     {"id": 2, "name": "ax7"},
@@ -101,26 +101,26 @@ class TestExpect(unittest.TestCase):
         }
 
         expect(response).to_be({
-            "menue": {
+            "menu": {
                 "tags": SomeList()
             }
         })
 
         expect(response).to_be({
-            "menue": {
+            "menu": {
                 "tags": SomeList(dict)
             }
         })
         expect(response).to_be({
-            "menue": {
-                "tags": SomeList(SomePartialDict({
+            "menu": {
+                "tags": SomeList(SomeDict({
                     "id": Some(int)
                 }))
             }
         })
 
         response = {
-            "menue": {
+            "menu": {
                 "tags": [
                     {"id": 1, "z-index": 12},
                     {"id": 2, "name": "ax7"},
@@ -131,9 +131,47 @@ class TestExpect(unittest.TestCase):
         }
 
         expect(response).not_to_be({
-            "menue": {
-                "tags": SomeList(SomePartialDict({
+            "menu": {
+                "tags": SomeList(SomeDict({
                     "id": Some(int)
+                }))
+            }
+        })
+
+        expect(response).to_be({
+            "menu": {
+                "tags": SomeList(SomeDict({
+                    "id": Some(int, str)
+                }))
+            }
+        })
+
+    def test_partial_dict_optional(self):
+        response = {
+            "menu": {
+                "tags": [
+                    {"id": 1, "z-index": 12},
+                    {"id": 2, "name": "ax7"},
+                    {"id": 5, "name": "ax7", "z-index": 12},
+                    {"id": 2, "alias": "iivz"},
+                ]
+            }
+        }
+
+        expect(response).to_be({
+            "menu": {
+                "tags": SomeList(SomeDict({
+                    "id": Some(int),
+                    "name": SomeOrNone(str)
+                }))
+            }
+        })
+
+        expect(response).not_to_be({
+            "menu": {
+                "tags": SomeList(SomeDict({
+                    "id": Some(int),
+                    "name": SomeOrNone(int)
                 }))
             }
         })
