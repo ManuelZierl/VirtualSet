@@ -1,10 +1,25 @@
 import inspect
+from collections import Iterable
 from typing import Union, Callable, Any
 
 from virtualset.Exceptions import *
 
 
 class Some:
+    """
+    Some() validates agains given arguments if any matches it equals
+    if no argument is given Some always equals
+
+    examples:
+    >>> Some() == ...
+    True
+    >>> Some(int) == 1
+    True
+    >>> Some(str, int) == 21
+    True
+    >>> Some(int) == "abc"
+    False
+    """
     def __init__(self, *args: Union[type, Callable, "Some"]):
         self.types = []
         if args:
@@ -26,11 +41,13 @@ class Some:
             self.types = None
 
     def __eq__(self, other: Any):
+        if self.types is None:
+            return True
+        # todo: what of other is also a Some is this something we want
         for t in self.types:
             if isinstance(t, type):
                 if isinstance(other, t):
                     return True
-
             elif isinstance(t, Some):
                 if t == other:
                     return True
@@ -42,24 +59,123 @@ class Some:
                         "instead")
                 if eq:
                     return True
+        return False
 
-            return False
+
+class AllOf(Some):
+    """
+    AllOf validates against all given arguments an only equals if all match.
+
+    examples:
+    >>> AllOf(int) == 12
+    True
+    >>> AllOf(int, str) == 12
+    False
+    >>> AllOf(object, str) == "abc"
+    True
+    """
+    def __init__(self, *args: Union[type, Callable, "Some"]):
+        def validate_all(other):
+            return all(Some(arg) == other for arg in args)
+        super().__init__(validate_all)
+
+
+class SomeIterable(Some):
+    """
+    SomeIterable equals all iterable objects that are equal to its given arguemnts
+
+    example:
+    >>> SomeIterable() == [1, 2, 3]
+    True
+    >>> SomeIterable() == 12
+    False
+    >>> SomeIterable(int) == (1, 2, 4)
+    True
+    >>> SomeIterable(str) == (1, 3, 4)
+    False
+    """
+    # todo: first=None, last=None, nth=None,
+    def __init__(self, *args: Union[type, Callable, "Some"], length=None, is_type=Iterable):
+        def some_iterable_validator(others):
+            if not isinstance(others, is_type):
+                return False
+            if length is not None and len(others) != length:
+                return False
+            some = Some(*args)
+
+            return all(some == x for x in others)
+        super().__init__(some_iterable_validator)
+
+
+class SomeList(SomeIterable):
+    """
+    SomeList is just like SomeIterator but only True if other is of type 'list'
+
+    examples
+    >>> SomeList() == []
+    True
+    >>> SomeList() == [1, 2]
+    True
+    >>> SomeList() == (1, 2)
+    False
+    """
+    # todo: test
+    # todo: first=None, last=None, nth=None,
+    def __init__(self, *args: Union[type, Callable, "Some"], length=None):
+        super().__init__(*args, length=length, is_type=list)
+
+
+class SomeDict(Some):
+    # todo: test
+    """
+    SomeDict is equal to any dict
+
+    examples:
+    >>> SomeDict() == {}
+    True
+    >>> SomeDict() == {"a": {"a1": 1, "a2": 2}, "b": 3}
+    True
+    >>> SomeDict() == 12
+    False
+    """
+    def __init__(self):
+        super().__init__(dict)
+
+
+class SomePartialDict(Some):
+    # todo: test
+    """
+    SomePartialDict is equal to any dict that contains all keys and values that are given as a dict as argument
+
+    examples
+    >>> SomePartialDict({"a": 1}) == {"a": 1, "b": 2}
+    True
+    >>> SomePartialDict({"a": 2}) == {"a": 1, "b": 2}
+    False
+    """
+    def __init__(self, arg=None):
+        if arg is None:
+            arg = {}
+
+        def some_partial_dict_validator(other):
+            if not isinstance(arg, dict):
+                return False
+            return all(item in other.items() for item in arg.items())
+
+        super().__init__(some_partial_dict_validator)
 
 
 # TODO: SOMES
 # TODO: SomeStrict()
-# TODO: SomeIterator(len=, first=, last=, nth=,)
-# TODO: SomeList()
-# TODO: SomeTuple()
-# TODO: SomeDict()
+# TODO: SomeTuple(SomeIterator)
+# TODO: SomeSet(SomeIterator)
 # TODO: SomeCallable()
 # TODO: SomeIn()
 # TODO: SomeEmail()
 # TODO: NotSome()
 # TODO: AllOf()? other name but instead of one validator must be true all must be true
 # TODO: SomeStr(regex=, pattern=Hal_o W__t, endswith=, startswith=)
-# TODO: SomeNumber(min=, max=) -> Some(int, float, ...?)
-
+# TODO: SomeNumber(min=, max=) -> Some(int, float, long...?)
 
 class has_len(Some):
     """

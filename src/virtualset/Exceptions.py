@@ -12,3 +12,8 @@ class InvalidArgument(VirtualSetException):
 
 class InvalidFunction(InvalidArgument):
     pass
+
+"""
+class ExpectationError(VirtualSetException, AssertionError):
+    pass
+"""
