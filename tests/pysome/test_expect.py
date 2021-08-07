@@ -175,3 +175,25 @@ class TestExpect(unittest.TestCase):
                 }))
             }
         })
+
+    def test_chainable(self):
+        def not_5(x):
+            return x != 5
+        expect(12).to_be(Some(int)).to_be(Some(not_5))
+
+        expect(5).to_be(Some(int))
+
+        with self.assertRaises(AssertionError):
+            expect(5).to_be(Some(int)).to_be(Some(not_5))
+
+        class Foo:
+            pass
+
+        class Bar(Foo):
+            pass
+
+        foo = Foo()
+        bar = Bar()
+
+        expect(foo).to_be(Some(Foo)).not_to_be(Some(Bar))
+        expect(bar).to_be(Some(Bar)).to_be(Some(Foo)).to_be(Some(Bar)).not_to_be(Some(int))

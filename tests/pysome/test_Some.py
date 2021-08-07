@@ -1,8 +1,6 @@
 import unittest
-from collections import Iterable
 
 from pysome import *
-from pysome.Exceptions import *
 
 
 class SomeTests(unittest.TestCase):
@@ -184,46 +182,108 @@ class SomeDictTests(unittest.TestCase):
             _ = SomeDict(12)
 
 
-class TestHasLen(unittest.TestCase):
+class SomeInTest(unittest.TestCase):
+    def test_alias(self):
+        self.assertTrue(SomeIn is is_in)
+
     def test_basics(self):
-        self.assertTrue(has_len(3) == [1, 2, 3])
-        self.assertTrue(has_len(2) == [1, "a"])
-        self.assertTrue(has_len(2) == {"a": 1, "b": 2})
-        self.assertTrue(has_len(4) == {1, 2, 3, 4})
-        self.assertTrue(has_len(0) == [])
-
-        self.assertFalse(has_len(2) == [1, "a", str])
-        self.assertFalse(has_len(2) == [])
-        self.assertFalse(has_len(5) == {"a": 1, "b": 2})
-
-        self.assertFalse(has_len(5) == 1)  # 1 has no __len__
-
-    def test_min_max(self):
-        self.assertTrue(has_len(min_length=2) != [])
-        self.assertTrue(has_len(min_length=2) != [1])
-        self.assertTrue(has_len(min_length=2) == [1, 2])
-        self.assertTrue(has_len(min_length=2) == [1, 2, 3])
-
-        self.assertTrue(has_len(max_length=2) == [])
-        self.assertTrue(has_len(max_length=2) == [1])
-        self.assertTrue(has_len(max_length=2) == [1, 2])
-        self.assertTrue(has_len(max_length=2) != [1, 2, 3])
-
-        self.assertTrue(has_len(min_length=1, max_length=2) != [])
-        self.assertTrue(has_len(min_length=1, max_length=2) == [1])
-        self.assertTrue(has_len(min_length=1, max_length=2) == [1, 2])
-        self.assertTrue(has_len(min_length=1, max_length=2) != [1, 2, 3])
-
-
-class TestIsIn(unittest.TestCase):
-    def test_basics(self):
-        self.assertTrue(is_in([1, 2, 3]) == 1)
-        self.assertTrue(is_in([1, 2, 3]) != 4)
-        self.assertTrue(is_in({"a", "b"}) == "a")
-        self.assertTrue(is_in({"a", "b"}) != "ab")
-        self.assertTrue(is_in("abcdefg") == "ab")
-        self.assertTrue(is_in("abcdefg") == "b")
-        self.assertTrue(is_in("abcdefg") != "ac")
+        self.assertTrue(SomeIn([1, 2, 3]) == 1)
+        self.assertTrue(SomeIn([1, 2, 3]) != 4)
+        self.assertTrue(SomeIn({"a", "b"}) == "a")
+        self.assertTrue(SomeIn({"a", "b"}) != "ab")
+        self.assertTrue(SomeIn("abcdefg") == "ab")
+        self.assertTrue(SomeIn("abcdefg") == "b")
+        self.assertTrue(SomeIn("abcdefg") != "ac")
 
         with self.assertRaises(InvalidArgument):
-            _ = is_in(42)
+            _ = SomeIn(42)
+
+
+class SomeWithLenTest(unittest.TestCase):
+    def test_alias(self):
+        self.assertTrue(SomeWithLen is has_len)
+
+    def test_basics(self):
+        self.assertTrue(SomeWithLen(3) == [1, 2, 3])
+        self.assertTrue(SomeWithLen(2) == [1, "a"])
+        self.assertTrue(SomeWithLen(2) == {"a": 1, "b": 2})
+        self.assertTrue(SomeWithLen(4) == {1, 2, 3, 4})
+        self.assertTrue(SomeWithLen(0) == [])
+
+        self.assertFalse(SomeWithLen(2) == [1, "a", str])
+        self.assertFalse(SomeWithLen(2) == [])
+        self.assertFalse(SomeWithLen(5) == {"a": 1, "b": 2})
+
+        self.assertFalse(SomeWithLen(5) == 1)  # 1 has no __len__
+
+    def test_min_max(self):
+        self.assertTrue(SomeWithLen(min_length=2) != [])
+        self.assertTrue(SomeWithLen(min_length=2) != [1])
+        self.assertTrue(SomeWithLen(min_length=2) == [1, 2])
+        self.assertTrue(SomeWithLen(min_length=2) == [1, 2, 3])
+
+        self.assertTrue(SomeWithLen(max_length=2) == [])
+        self.assertTrue(SomeWithLen(max_length=2) == [1])
+        self.assertTrue(SomeWithLen(max_length=2) == [1, 2])
+        self.assertTrue(SomeWithLen(max_length=2) != [1, 2, 3])
+
+        self.assertTrue(SomeWithLen(min_length=1, max_length=2) != [])
+        self.assertTrue(SomeWithLen(min_length=1, max_length=2) == [1])
+        self.assertTrue(SomeWithLen(min_length=1, max_length=2) == [1, 2])
+        self.assertTrue(SomeWithLen(min_length=1, max_length=2) != [1, 2, 3])
+
+
+class NotSomeTest(unittest.TestCase):
+    def test_alias(self):
+        self.assertTrue(NotSome is is_not)
+
+    def test_basics(self):
+        self.assertTrue(NotSome(str) == 12)
+        self.assertTrue(NotSome(str) != "ab")
+        self.assertTrue(NotSome(str, int) != 12)
+        self.assertTrue(NotSome(str, int) != "ab")
+        self.assertTrue(NotSome(str, int) == [12, "ab"])
+
+        def sum_is_5(x):
+            return sum(x) == 5
+        self.assertTrue(NotSome(sum_is_5) == [3,3])
+        self.assertTrue(NotSome(sum_is_5) != [3,2])
+
+
+class SomeStrTest(unittest.TestCase):
+    def test_basics(self):
+        self.assertTrue(SomeStr() == "abc")
+        self.assertTrue(SomeStr() != 42)
+        self.assertTrue(SomeStr() != ["a42"])
+
+    def test_regex(self):
+        reg = "a[0-9]z"
+        self.assertTrue(SomeStr(regex=reg) == "a8z")
+        self.assertTrue(SomeStr(regex=reg) == "a0z")
+        self.assertTrue(SomeStr(regex=reg) != "abz")
+        self.assertTrue(SomeStr(regex=reg) != "a99z")
+        reg = "a[0-9]*z"
+        self.assertTrue(SomeStr(regex=reg) == "a8z")
+        self.assertTrue(SomeStr(regex=reg) == "a043z")
+        self.assertTrue(SomeStr(regex=reg) != "a0o0z")
+        self.assertTrue(SomeStr(regex=reg) == "a999z")
+
+    def test_pattern(self):
+        self.assertTrue(SomeStr(pattern="py_om_") == "pysome")
+        self.assertTrue(SomeStr(pattern="py_om_") == "pyxomx")
+        self.assertTrue(SomeStr(pattern="py_om_") != "pxsome")
+        self.assertTrue(SomeStr(pattern="py_om_") != "pysome ")
+        self.assertTrue(SomeStr(pattern="py_om_") != " pysome")
+
+    def test_endswith(self):
+        self.assertTrue(SomeStr(endswith="some") == "pysome")
+        self.assertTrue(SomeStr(endswith="some") == "handsome")
+        self.assertTrue(SomeStr(endswith="some") != "handsom")
+        self.assertTrue(SomeStr(endswith="some") != "handsome ")
+
+    def test_startswith(self):
+        self.assertTrue(SomeStr(startswith="py") == "pysome")
+        self.assertTrue(SomeStr(startswith="py") == "python")
+        self.assertTrue(SomeStr(startswith="py") != " python")
+        self.assertTrue(SomeStr(startswith="py") != " pysome")
+        self.assertTrue(SomeStr(startswith="py") != "pxthon")

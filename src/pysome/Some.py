@@ -1,15 +1,32 @@
 import inspect
+import re
 from collections import Iterable
 from typing import Union, Callable, Any
+from pysome.exceptions import *
 
-from pysome.Exceptions import *
+
+# TODO new Somes:
+#  - SomeTuple(SomeIterable)
+#  - SomeSet(SomeIterable)
+#  - SomeStrict(Some):
+#  - SomeCallable() -> is_callable
+#  - SomeNumber(min=, max=)
+#  - SomeWithAttrs() -> has_attrs()
+#  - SomeFile
+
+# TODO advance old Somes:
+#   SomeIterable with arguemnt first=None, last=None, nth=None,
+
+# TODO: QUESTION:
+#  - should Somes be comparable with each other?
 
 
 class Some:
     """
-    Some() validates agains given arguments if any matches it equals
-    if no argument is given Some always equals
-
+    Some() equals all objects that:
+        1. have the one of the given types
+        2. evaluate to True by one of the given functions
+        3. equal another given Some
     examples:
     >>> Some() == ...
     True
@@ -45,7 +62,6 @@ class Some:
     def __eq__(self, other: Any):
         if self.types is None:
             return True
-        # todo: what of other is also a Some is this something we want
         for t in self.types:
             if isinstance(t, type):
                 if isinstance(other, t):
@@ -66,7 +82,7 @@ class Some:
 
 class AllOf(Some):
     """
-    AllOf validates against all given arguments an only equals if all match.
+    AllOf validates against all given arguments and only equals if all match.
 
     examples:
     >>> AllOf(int) == 12
@@ -82,10 +98,7 @@ class AllOf(Some):
         super().__init__(validate_all)
 
 
-# Todo SomeOrNone()
-# works exactly like Some but is also true for SomeOrNone() == None
 class SomeOrNone(Some):
-    # todo: testcas
     """
     Works exactly like Some() but also equals None
 
@@ -124,7 +137,6 @@ class SomeIterable(Some):
     >>> SomeIterable(str) == (1, 3, 4)
     False
     """
-    # todo: first=None, last=None, nth=None,
     def __init__(self, *args: Union[type, Callable, "Some"], length=None, is_type=Iterable):
         def some_iterable_validator(others):
             if not isinstance(others, is_type):
@@ -149,13 +161,8 @@ class SomeList(SomeIterable):
     >>> SomeList() == (1, 2)
     False
     """
-    # todo: test
-    # todo: first=None, last=None, nth=None,
     def __init__(self, *args: Union[type, Callable, "Some"], length=None):
         super().__init__(*args, length=length, is_type=list)
-
-
-# TODO: SomeTuple(SomeIterable)
 
 
 class SomeDict(Some):
@@ -176,7 +183,6 @@ class SomeDict(Some):
     >>> SomeDict({"a": Some(int)}) == {"a": {"a1": 1, "a2": 2}, "b": 3}
     False
     """
-
     def __init__(self, partial_dict: dict = None, **kwargs):
         if partial_dict is None:
             partial_dict = {}
@@ -195,13 +201,27 @@ class SomeDict(Some):
         super().__init__(some_dict_validator)
 
 
-# TODO: SomeSet(SomeIterable)
+class SomeIn(Some):
+    """
+       is true if other is in the given container
 
-# TODO: class SomeStrict(Some):
+       examples:
+       >>> SomeIn({"a", "b"}) == "a"
+       True
+       >>> SomeIn(["a", "b"]) == "b"
+       True
+       >>> SomeIn({"a", "b"}) == "c"
+       False
+       """
 
-# TODO: SomeCallable() -> is_callable
+    def __init__(self, container):
+        if not hasattr(container, '__contains__'):
+            raise InvalidArgument("is_in container doesn't implement __contains__")
 
-# TODO: SomeIn() -> is_in()
+        def is_in_validator(other):
+            return other in container
+
+        super().__init__(is_in_validator)
 
 
 class SomeWithLen(Some):
@@ -235,85 +255,71 @@ class SomeWithLen(Some):
         super().__init__(len_validator)
 
 
-# TODO: NotSome() -> is_not()
+class NotSome(Some):
+    """
+    NotSome equals an object if all of the conditions are false
+
+    examples:
+    >>> NotSome(int) == "abc"
+    True
+    >>> NotSome(int, str) == "abc"
+    False
+    >>> NotSome(int, str) == 5.6
+    True
+    """
+    def __init__(self, *args: Union[type, Callable, "Some"]):
+        super().__init__(*args)
+
+    def __eq__(self, other):
+        return not super().__eq__(other)
 
 
-# TODO: SomeStr(regex=, pattern=Hal_o W__t, endswith=, startswith=)
+class SomeStr(Some):
+    """
+    Equals all Strings that fulfill given conditions
 
+    examples:
+    >>> SomeStr() == "abc"
+    True
+    >>> SomeStr(regex="a[0-9]z") == "a3z"
+    True
+    >>> SomeStr(regex="a[0-9]z") == "axz"
+    False
+    """
+    def __init__(self, regex=None, pattern=None, endswith=None, startswith=None):
+        if not SomeOrNone(str) == regex:
+            raise InvalidArgument("regex must be of type str or None")
+        if not SomeOrNone(str) == pattern:
+            raise InvalidArgument("pattern must be of type str or None")
+        if not SomeOrNone(str) == endswith:
+            raise InvalidArgument("endswith must be of type str or None")
+        if not SomeOrNone(str) == startswith:
+            raise InvalidArgument("startswith must be of type str or None")
 
-# TODO: SomeNumber(min=, max=) -> Some(int, float, long...?)
+        def some_str_validator(other):
+            if not isinstance(other, str):
+                return False
+            if regex is not None:
+                if re.match(regex, other):
+                    return True
+                else:
+                    return False
+            if pattern is not None:
+                if re.match(pattern.replace("_", ".") + "$", other):
+                    return True
+                else:
+                    return False
+            if endswith is not None:
+                return other.endswith(endswith)
+            if startswith is not None:
+                return other.startswith(startswith)
+            return True
+        super().__init__(some_str_validator)
 
 
 # alias names
 has_len = SomeWithLen
 
+is_in = SomeIn
 
-class is_in(Some):
-    """
-    is true if other is in the given container
-
-    examples:
-    >>> is_in({"a", "b"}) == "a"
-    True
-    >>> is_in(["a", "b"]) == "b"
-    True
-    >>> is_in({"a", "b"}) == "c"
-    False
-    """
-
-    def __init__(self, container):
-        if not hasattr(container, '__contains__'):
-            raise InvalidArgument("is_in container doesn't implement __contains__")
-
-        def is_in_validator(other):
-            return other in container
-
-        super().__init__(is_in_validator)
-
-
-class has_attr(Some):
-    """
-    true if other has any of given attr(s)
-
-    examples:
-    >>> has_attr("split") == "a"
-    True
-    >>> has_attr("split") == 1
-    False
-    >>> has_attr("imag", "split") == "a"
-    True
-    >>> has_attr("imag", "real") == "a"
-    False
-    """
-    def __init__(self, *args: Union[str]):
-        def has_attr_validator(other):
-            for attr in args:
-                if hasattr(other, attr):
-                    return True
-            return False
-
-        super().__init__(has_attr_validator)
-
-
-class has_all_attr(Some):
-    """
-    true if other has all of given attr(s)
-
-    examples:
-    >>> has_all_attr("split") == "a"
-    True
-    >>> has_all_attr("split") == 1
-    False
-    >>> has_all_attr("split", "imag") == "a"
-    False
-    >>> has_all_attr("real", "imag") == 1
-    True
-    """
-
-    def __init__(self, *args: Union[str]):
-        def has_any_attr_validator(other):
-            return all(hasattr(other, attr) for attr in args)
-
-        super().__init__(has_any_attr_validator)
-
-# TODO: is_callable()
+is_not = NotSome
