@@ -159,6 +159,13 @@ class SomeListTests(unittest.TestCase):
         self.assertTrue(SomeList(length=3) == [1, 2, 3])
         self.assertTrue(SomeList(length=4) != [1, 2, 3])
 
+    def test_all(self):
+        self.assertTrue(SomeList(int) == [1, 2, 3])
+        self.assertTrue(SomeList(int) != [1, 2.5, 3])
+
+        self.assertTrue(SomeList(SomeList()) == [["a", 2], [4.5, 4.2]])
+        self.assertTrue(SomeList(SomeList()) != [[], 5])
+
 
 class SomeDictTests(unittest.TestCase):
     def test_basics(self):
@@ -197,6 +204,13 @@ class SomeInTest(unittest.TestCase):
 
         with self.assertRaises(InvalidArgument):
             _ = SomeIn(42)
+
+    def test_empyt(self):
+        with self.assertRaises(TypeError):
+            self.assertTrue(SomeIn() == 1)
+
+        self.assertTrue(SomeIn({}) != 0)
+        self.assertTrue(SomeIn({}) != None)
 
 
 class SomeWithLenTest(unittest.TestCase):

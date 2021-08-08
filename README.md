@@ -1,4 +1,3 @@
-## `Work - in - progress`
 # PySome
 
 `PySome` brings the `expect(...).to_be(...)` syntax to python to give developers more
@@ -59,10 +58,7 @@ from pysome import Some
 assert {"a": 12, "b": "x", "c": {}} == {"a": Some(int), "b": Some(str), "c": Some(dict)}
 ```
 
-It is still advised to use the `expect(...).to_be(...)` to avoid errors.
- todo: more in depth explanation why ...
-...
-
+Out of different reasons it is still advised to use `expect(...).to_be(...)`
 
 ## Some API
 
@@ -115,32 +111,143 @@ but there are some useful pre-implemented subclasses of `Some`:
 `AllOf()` equals all objects that fulfill <u>all</u> given conditions. So for example an object `AllOf(str, int)` could only match an 
 object that inherits from `int` and `str`
 ```python
-from pysome import AllOf
+from pysome import AllOf, expect
+def less_than_10(x):
+    return x < 10
 
-
+expect(8).to_be(AllOf(less_than_10, int))
+expect(8.5).not_to_be(AllOf(less_than_10, int))
 ```
+
+this is in contrast to `Some()` which equals all object tha fulfill <u>only one</u> of the conditions
 ### <a name="SomeOrNone"></a>SomeOrNone
-todo:
+`SomeOrNone()` is basically the same as `Some()` but it also equals `None`. This is very usefull if you want to test a key of `dict` but you do not care if it exists.
+```python
+from pysome import SomeOrNone, SomeDict, Some, expect
+
+expect(12).to_be(SomeOrNone(int))
+expect(None).to_be(SomeOrNone(int))
+expect("abc").not_to_be(SomeOrNone(int))
+
+expect({
+ "id": 1, 
+ "name": "abc"
+}).to_be(
+ SomeDict({
+  "id": Some(int),
+  "name": SomeOrNone(str) # name must be a string or non existent
+ })
+)
+
+expect({
+ "id": 1, 
+}).to_be(
+ SomeDict({
+  "id": Some(int),
+  "name": SomeOrNone(str)
+ })
+)
+```
 ### <a name="SomeIterable"></a>SomeIterable
-todo:
+`SomeIterable()` equals all objects that are iterable where every element of the iterable must fulfill the given conditions.
+```python
+from pysome import SomeIterable, expect
+
+expect([1, 2, 3]).to_be(SomeIterable(int))
+expect([1, 2.5, 3]).not_to_be(SomeIterable(int))
+
+# you can also build nested structure
+expect([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).to_be(SomeIterable(SomeIterable(int)))
+```
 ### <a name="SomeList"></a>SomeList
-todo:
+`SomeList()` works exactly the same as `SomeIterable` with the only difference that the Iterable must be of type `list` 
 ### <a name="SomeDict"></a>SomeDict
-todo:
+`SomeDict()` equals any dict that has all the given keys (as one dict or as kwargs). If you want to test if 
+a dict has exactly the keys use a default dict instead.
+```python
+from pysome import SomeDict, SomeList, Some, expect
+
+expect([
+ {"id": 1, "name": "ab"},
+ {"id": 2, "z-index": -1},
+ {"id": 3 },
+]).to_be(
+ SomeList(
+  SomeDict(id=Some(int))
+ )
+)
+```
 ### <a name="SomeIn"></a>SomeIn
-todo:
+`SomeIn` equals all objects that are in its given container.
+```python
+from pysome import SomeIn, expect
+
+expect("a").to_be(SomeIn({1, 2, "a"}))
+expect("b").not_to_be(SomeIn({1, 2, "a"}))
+```
 ### <a name="SomeWithLen"></a>SomeWithLen
-todo:
+`SomeWithLen()` equals all objects that fulfill the given length condition. You can either give an explicit length or 
+define a range with `min_length` and `max_length`
+```python
+from pysome import SomeWithLen, expect
+
+expect([1, 2, 3]).to_be(SomeWithLen(3))
+expect([1, 2, 3]).to_be(SomeWithLen(min_length=1))
+expect([1, 2, 3]).not_to_be(SomeWithLen(max_length=2))
+```
 ### <a name="NotSome"></a>NotSome
-todo:
+`NotSome` is the opposite of `Some`. It only equals an object if all given conditions are false.
+```python
+from pysome import NotSome, expect
+
+expect(1).to_be(NotSome(str, float))
+expect(1.5).not_to_be(NotSome(str, float))
+```
 ### <a name="SomeStr"></a>SomeStr
-todo:
+`SomeStr` is a more flexible option to the simple `Some(str)` that gives you more options like regex, simple wildcard patterns, endswith and startswith.
+```python
+from pysome import SomeStr, expect
+
+expect("pysome").to_be(SomeStr())
+expect("pysome").to_be(SomeStr(pattern="p__ome"))
+expect("pysome").to_be(SomeStr(startswith="py"))
+expect("pysome").to_be(SomeStr(endswith="some"))
+expect("a8z").to_be(SomeStr(regex="a[0-9]z"))
+```
 
 ## Same API
 > :warning: **Same** should only be used with the `expect(...).to_be(...)` syntax!
 
+`Same()` objects can be used to check inside an `expect` statement that two values are the same.
+Same also wraps around `Some()` so you can also use default parameter. A single `Same()` will therfore
+behave exaclt like a `Some()`
+
+```python
+from pysome import Same, expect
+
+
+expect([1, 1]).to_be([Same(), Same()])
+expect([1, 2]).not_to_be([Same(), Same()])
+```
+you can also provide names to the same to make multile equal checks
+```python
+from pysome import Same, expect
+
+expect([1, "a", 1, "a"]).to_be(
+ [
+  Same(int, name="int_same"),
+  Same(str, name="str_same"),
+  Same(int, name="int_same"),
+  Same(str, name="str_same")
+ ]
+)
+```
 
 ## Exceptions:
 | name  | description |
 |--- |--- |
-| | |
+| `PySomeException` | Parent class of all Exceptions that are raised by `pysome`  |
+| `MustReturnBool(PySomeException)` | A function used as a validator in an `Some()` must always return a `bool`. Either the object equals or not. This exception is thrown if a function doesnt return a `bool`  value |
+| `InvalidArgument(PySomeException)` | This exception is raised if a given argument to a `pysome` class is invalid  |
+| `InvalidFunction(InvalidArgument)` | A function provided as condition to a Some must except exactly one parameter. If it doest this exception is thrown  |
+| `SameOutsideExpect()` | If you try to compare a Same object outside of an `expect(...).to_be(...)` this error is raise |

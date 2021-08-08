@@ -5,22 +5,6 @@ from typing import Union, Callable, Any
 from pysome.exceptions import *
 
 
-# TODO new Somes:
-#  - SomeTuple(SomeIterable)
-#  - SomeSet(SomeIterable)
-#  - SomeStrict(Some):
-#  - SomeCallable() -> is_callable
-#  - SomeNumber(min=, max=)
-#  - SomeWithAttrs() -> has_attrs()
-#  - SomeFile
-
-# TODO advance old Somes:
-#   SomeIterable with arguemnt first=None, last=None, nth=None,
-
-# TODO: QUESTION:
-#  - should Somes be comparable with each other?
-
-
 class Some:
     """
     Some() equals all objects that:

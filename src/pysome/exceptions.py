@@ -14,5 +14,5 @@ class InvalidFunction(InvalidArgument):
     pass
 
 
-class SameOutsideExpect(InvalidArgument):
+class SameOutsideExpect(PySomeException):
     pass
