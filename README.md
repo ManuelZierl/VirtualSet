@@ -217,10 +217,10 @@ expect("a8z").to_be(SomeStr(regex="a[0-9]z"))
 
 ## Same API
 > :warning: **Same** should only be used with the `expect(...).to_be(...)` syntax!
-
+### <a name="Same"></a>Same
 `Same()` objects can be used to check inside an `expect` statement that two values are the same.
-Same also wraps around `Some()` so you can also use default parameter. A single `Same()` will therfore
-behave exaclt like a `Some()`
+Same also inherits from `Some()` so you can also use default parameter. A single `Same()` will therefore
+behave exactly like a `Some()`
 
 ```python
 from pysome import Same, expect
@@ -229,7 +229,7 @@ from pysome import Same, expect
 expect([1, 1]).to_be([Same(), Same()])
 expect([1, 2]).not_to_be([Same(), Same()])
 ```
-you can also provide names to the same to make multile equal checks
+you can also provide names to the same to make multiple equal checks
 ```python
 from pysome import Same, expect
 
@@ -241,6 +241,25 @@ expect([1, "a", 1, "a"]).to_be(
   Same(str, name="str_same")
  ]
 )
+```
+| name  | alias | short description  |
+|---    |---     |---        |
+| [Same()](#Same) | `is_same` | all `Same()` objects in one expect statement only equal if all do equal
+| [NotSame()](#NotSame) | `is_unique` | all `NotSame()` objects in one expect statement only equal if all are unique
+
+### <a name="NotSame"></a>NotSame
+`NotSame()` or `is_unique` can be used to check inside an expect statement that two values are unique (do not equal)
+```python
+from pysome import NotSame, expect
+
+expect([1, 2, 3]).to_be([NotSame(), NotSame(), NotSame()])
+expect({
+    "a": "abc",
+    "b": "abc"
+}).not_to_be({
+    "a": NotSame(str),
+    "b": NotSame(str)
+})
 ```
 
 ## Exceptions:
