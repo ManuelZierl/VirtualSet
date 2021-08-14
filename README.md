@@ -1,7 +1,7 @@
 # PySome
 
 `PySome` brings the `expect(...).to_be(...)` syntax to python to give developers more
-flexible Options for testing for the testing of nested objects.
+flexible options for testing of nested objects.
 
 ## Installation
 

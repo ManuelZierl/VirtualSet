@@ -7,17 +7,13 @@ class expect:
         self.data = data
 
     def to_be(self, other):
-        SameState._allow_same_usage = True
-        SameState._state = {}
+        SameState._start()  # noqa
         assert other == self.data
-        SameState._state = {}
-        SameState._allow_same_usage = False
+        SameState._end()  # noqa
         return self
 
     def not_to_be(self, other):
-        SameState._allow_same_usage = True
-        SameState._state = {}
+        SameState._start()  # noqa
         assert not other == self.data
-        SameState._state = {}
-        SameState._allow_same_usage = False
+        SameState._end()  # noqa
         return self

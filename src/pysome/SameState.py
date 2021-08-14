@@ -4,21 +4,23 @@ class default_name:
 
 
 class SameState:
-    _allow_same_usage = False
-    _state = {}
+    _allow = {
+        "Same": False,
+        "NotSame": False
+    }
+    _state = {
+        "Same": {},
+        "NotSame": {}
+    }
 
+    @staticmethod
+    def _start():
+        for key in SameState._allow.keys():
+            SameState._allow[key] = True
+            SameState._state[key] = {}
 
-class same_context(object):
-    def __init__(self, state=None):
-        if state is None:
-            state = {}
-        self.state = state
-
-    def __enter__(self):
-        SameState._allow_same_usage = True
-        SameState._state = self.state
-        return self.state
-
-    def __exit__(self):
-        SameState._allow_same_usage = False
-        SameState._state = {}
+    @staticmethod
+    def _end():
+        for key in SameState._allow.keys():
+            SameState._allow[key] = False
+            SameState._state[key] = {}
