@@ -106,6 +106,8 @@ but there are some useful pre-implemented subclasses of `Some`:
 | [SomeWithLen()](#SomeWithLen)     | `has_len` |  `length = None`, `min_length = None`, `max_length = None` | equals al objects that fulfill given length conditions
 | [NotSome()](#NotSome)             | `is_not` | *args  | equals all objects that do not fulfill any of the given conditions
 | [SomeStr()](#SomeStr)             |  | `regex=None`, `pattern=None`, `endswith=None`, `startswith=None` | equals all strings under given conditions  
+| [SomeEmail()](#SomeEmail)             | `is_email` |  | equals strings that are email addresses  
+| [SomeUuid()](#SomeUuid)             | `is_uuid` |  | equals strings that are UUIDs  
 
 ### <a name="AllOf"></a>AllOf
 `AllOf()` equals all objects that fulfill <u>all</u> given conditions. So for example an object `AllOf(str, int)` could only match an 
@@ -214,6 +216,25 @@ expect("pysome").to_be(SomeStr(startswith="py"))
 expect("pysome").to_be(SomeStr(endswith="some"))
 expect("a8z").to_be(SomeStr(regex="a[0-9]z"))
 ```
+
+### <a name="SomeEmail"></a>SomeEmail
+`SomeEmail` is a subclass of `SomeStr` that only equals a string if it is valid email address
+```python
+from pysome import SomeEmail, expect
+
+expect("ab.cd@ef.gh").to_be(SomeEmail())
+expect("ab.cdef.gh").not_to_be(SomeEmail())
+```
+
+### <a name="SomeUuid"></a>SomeUuid
+`SomeUuid` is a subclass of `SomeStr` that only equals a string if it is valid UUID
+```python
+from pysome import SomeUuid, expect
+
+expect("7de52743-8a1a-4782-9877-b10bf792172f").to_be(SomeUuid())
+expect("not a uuid").not_to_be(SomeUuid())
+```
+
 
 ## Same API
 > :warning: **Same** should only be used with the `expect(...).to_be(...)` syntax!

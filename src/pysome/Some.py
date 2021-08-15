@@ -301,9 +301,43 @@ class SomeStr(Some):
         super().__init__(some_str_validator)
 
 
+class SomeEmail(SomeStr):
+    """
+    SomeEmail equals all email strings that are email adresses
+
+    examples:
+    >>> SomeEmail() == "john.doe@internet.com"
+    True
+    >>> SomeEmail() == "not.a@emailadress"
+    False
+    """
+    def __init__(self):
+        super().__init__(regex="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+
+
+class SomeUuid(SomeStr):
+    """
+    SomeUuid equals all strings that are uuids
+
+    examples:
+    >>> SomeUuid() == "385a77ce-e9ad-47eb-aad6-d58512035fb0"
+    True
+    >>> SomeUuid() == "999f9aeb-cb49-455a-b170-6dda4c1e889b"
+    True
+    >>> SomeUuid() == "not a uuid"
+    False
+    """
+    def __init__(self):
+        super().__init__(regex=r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
+
+
 # alias names
 has_len = SomeWithLen
 
 is_in = SomeIn
 
 is_not = NotSome
+
+is_email = SomeEmail
+
+is_uuid = SomeUuid
