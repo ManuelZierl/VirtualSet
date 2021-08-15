@@ -26,7 +26,8 @@ jobs:
         pip install coverage
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with unittest
-      run: |
+      uses: coroo/pytest-coverage-commentator@v1.0.2
+      with: |
         cd src/
         coverage run -m unittest
         coverage report
