@@ -1,4 +1,6 @@
 # PySome
+`version 0.1.3`
+
 
 `PySome` brings the `expect(...).to_be(...)` syntax to python to give developers more
 flexible options for testing of nested objects.
