@@ -108,6 +108,7 @@ but there are some useful pre-implemented subclasses of `Some`:
 | [SomeStr()](#SomeStr)             |  | `regex=None`, `pattern=None`, `endswith=None`, `startswith=None` | equals all strings under given conditions  
 | [SomeEmail()](#SomeEmail)             | `is_email` |  | equals strings that are email addresses  
 | [SomeUuid()](#SomeUuid)             | `is_uuid` |  | equals strings that are UUIDs  
+| [SomeObject()](#SomeObject)             |  |  `*args`, `**kwargs`, | equals all objects with given attributes
 
 ### <a name="AllOf"></a>AllOf
 `AllOf()` equals all objects that fulfill <u>all</u> given conditions. So for example an object `AllOf(str, int)` could only match an 
@@ -233,6 +234,25 @@ from pysome import SomeUuid, expect
 
 expect("7de52743-8a1a-4782-9877-b10bf792172f").to_be(SomeUuid())
 expect("not a uuid").not_to_be(SomeUuid())
+```
+
+### <a name="SomeObject"></a>SomeObject
+`SomeObject` equals all objects that have the given attributes with the corresponding values
+```python
+from pysome import SomeObject, Some, expect
+
+class Foo:
+    def __init__(self):
+        self.x = 12
+        self.y = 14
+
+    def func(self):
+        pass
+
+expect(Foo()).to_be(SomeObject(x=Some(int)))
+expect(Foo()).to_be(SomeObject(func=Some()))
+expect(Foo()).not_to_be(SomeObject(z=Some()))
+expect(Foo()).not_to_be(SomeObject(x="abc"))
 ```
 
 

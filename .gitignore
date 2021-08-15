@@ -11,3 +11,6 @@ build/
 .pytest_cache/
 Pipfile*
 ignore.*
+**/coverage.*
+*.coverage
+htmlcov
