@@ -31,9 +31,11 @@ jobs:
         coverage run -m unittest
         coverage report > pytest-coverage.txt
     - name: Comment coverage
-      uses: coroo/pytest-coverage-commentator@v1.0.2
+      uses: machine-learning-apps/pr-comment@master
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        pytest-coverage: src/pytest-coverage.txt
+          path: src/pytest-coverage.txt
     - name: Run all doctests
       run: |
         cd src/
