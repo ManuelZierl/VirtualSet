@@ -30,3 +30,8 @@ jobs:
         cd src/
         coverage run -m unittest
         coverage report
+    - name: Run all doctests
+      run: |
+        cd src/
+        python3 -m doctest pysome/*.py
+
