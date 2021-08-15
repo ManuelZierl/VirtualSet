@@ -301,3 +301,20 @@ class SomeStrTest(unittest.TestCase):
         self.assertTrue(SomeStr(startswith="py") != " python")
         self.assertTrue(SomeStr(startswith="py") != " pysome")
         self.assertTrue(SomeStr(startswith="py") != "pxthon")
+
+
+class SomeEmailTest(unittest.TestCase):
+    def test_basics(self):
+        self.assertTrue(SomeEmail() == "john.doe@web.com")
+        self.assertTrue(SomeEmail() != "john.doeweb.com")
+        self.assertTrue(SomeEmail() == "johdo@eweb.com")
+        self.assertTrue(SomeEmail() != "j.d@ewebcom")
+
+
+class SomeUuidTest(unittest.TestCase):
+    def test_basics(self):
+        self.assertTrue(SomeUuid() == "3a01a28d-c79a-4bfa-b190-44a454d3cacb")
+        self.assertTrue(SomeUuid() == "7de52743-8a1a-4782-9877-b10bf792172f")
+        self.assertTrue(SomeUuid() != "7de52743-8a1a-4782-9877-b10bf792172")
+        self.assertTrue(SomeUuid() != "de52743-8a1a-4782-9877-b10bf792172f")
+        self.assertTrue(SomeUuid() != "not a uuid")
