@@ -35,7 +35,12 @@ class Same(Some):
     def _eq(self, other):
         return other == SameState._state[self.state_name][self.name]  # noqa
 
-
+"""
+TODO: For NotSame it should be ok is only one of the given is not equal all the other ones
+-> than it is really the opposite
+-> what we have done here is uniquer: all must be different
+TODO: or have we? test it?
+"""
 class NotSame(Same):
     state_name = "NotSame"
 
