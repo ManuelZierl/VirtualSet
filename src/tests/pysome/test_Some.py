@@ -73,6 +73,20 @@ class SomeTests(unittest.TestCase):
         with self.assertRaises(InvalidArgument):
             _ = Some(Some(str), "x")
 
+    def test_signature(self):
+        def always_true(x):
+            return True
+
+        self.assertTrue(str(Some()) == "Some()")
+        self.assertTrue(str(Some(int, str)) == "Some(int, str)")
+        self.assertTrue(
+            str(Some(int, str, Some(float, int), always_true)) == "Some(int, str, Some(float, int), always_true)")
+        self.assertTrue(str(Some(AllOf(Some(int), Some(str)))) == "Some(AllOf(Some(int), Some(str)))")
+
+    def test_not_hashable(self):
+        with self.assertRaises(TypeError):
+            _ = {Some(), Some()}
+
 
 class AllOfTests(unittest.TestCase):
     def test_basics(self):
@@ -93,6 +107,15 @@ class AllOfTests(unittest.TestCase):
         self.assertTrue(AllOf(tuple, sum_is_5) != (1, 3, 3))
         self.assertTrue(AllOf(tuple, sum_is_5, has_len(2)) == (0, 5))
 
+    def test_signature(self):
+        def always_true(x):
+            return True
+
+        self.assertTrue(str(AllOf()) == "AllOf()")
+        self.assertTrue(str(AllOf(int, str)) == "AllOf(int, str)")
+        self.assertTrue(
+            str(AllOf(int, str, AllOf(float, int), always_true)) == "AllOf(int, str, AllOf(float, int), always_true)")
+
 
 class SomeOrNoneTests(unittest.TestCase):
     def test_basics(self):
@@ -101,6 +124,14 @@ class SomeOrNoneTests(unittest.TestCase):
         self.assertTrue(SomeOrNone(int) == None)
         self.assertTrue(SomeOrNone(int) != "ab")
         self.assertTrue(SomeOrNone(str) == "ab")
+
+    def test_signature(self):
+        def always_true(x):
+            return True
+
+        self.assertTrue(str(SomeOrNone()) == "SomeOrNone()")
+        self.assertTrue(str(SomeOrNone(SomeOrNoneTests)) == "SomeOrNone(SomeOrNoneTests)")
+        self.assertTrue(str(SomeOrNone(int, always_true)) == "SomeOrNone(int, always_true)")
 
 
 class SomeIterableTests(unittest.TestCase):
@@ -146,6 +177,25 @@ class SomeIterableTests(unittest.TestCase):
         self.assertTrue(SomeIterable(is_type=list) != (1, 2, 3))
         self.assertTrue(SomeIterable(is_type=tuple) != [1, 2, 3])
 
+    def test_signature(self):
+        def always_true(x):
+            return True
+
+        self.assertTrue(str(SomeIterable()) == "SomeIterable()")
+        self.assertTrue(str(SomeIterable(int)) == "SomeIterable(int)")
+        self.assertTrue(str(SomeIterable(int, always_true)) == "SomeIterable(int, always_true)")
+        self.assertTrue(str(SomeIterable(Some(str))) == "SomeIterable(Some(str))")
+        self.assertTrue(str(SomeIterable(int, length=12)) == "SomeIterable(int, length=12)")
+        self.assertTrue(
+            str(SomeIterable(int, length=12, is_type=tuple)) == "SomeIterable(int, length=12, is_type=tuple)")
+
+    def test_invalid_is_type(self):
+        _ = SomeIterable()
+        _ = SomeIterable(is_type=int)
+
+        with self.assertRaises(InvalidArgument):
+            _ = SomeIterable(is_type=12)
+
 
 class SomeListTests(unittest.TestCase):
     def test_basics(self):
@@ -165,6 +215,15 @@ class SomeListTests(unittest.TestCase):
 
         self.assertTrue(SomeList(SomeList()) == [["a", 2], [4.5, 4.2]])
         self.assertTrue(SomeList(SomeList()) != [[], 5])
+
+    def test_signature(self):
+        def always_true(x):
+            return True
+
+        self.assertTrue(str(SomeList()) == "SomeList()")
+        self.assertTrue(str(SomeList(int, str)) == "SomeList(int, str)")
+        self.assertTrue(str(SomeList(int, always_true)) == "SomeList(int, always_true)")
+        self.assertTrue(str(SomeList(length=14.5)) == "SomeList(length=14.5)")
 
 
 class SomeDictTests(unittest.TestCase):
@@ -188,8 +247,18 @@ class SomeDictTests(unittest.TestCase):
         with self.assertRaises(InvalidArgument):
             _ = SomeDict(12)
 
+    def test_signature(self):
+        def always_true(x):
+            return True
 
-class SomeInTest(unittest.TestCase):
+        self.assertTrue(str(SomeDict()) == "SomeDict()")
+        self.assertTrue(str(SomeDict({"a": Some(int), "b": Some(str)})) == "SomeDict(a=Some(int), b=Some(str))")
+        self.assertTrue(str(SomeDict({"a": 12, "b": int}, c=SomeOrNone())) == "SomeDict(a=12, b=int, c=SomeOrNone())")
+        self.assertTrue(
+            str(SomeDict(a=SomeList(int, str, always_true))) == "SomeDict(a=SomeList(int, str, always_true))")
+
+
+class SomeInTests(unittest.TestCase):
     def test_alias(self):
         self.assertTrue(SomeIn is is_in)
 
@@ -212,8 +281,18 @@ class SomeInTest(unittest.TestCase):
         self.assertTrue(SomeIn({}) != 0)
         self.assertTrue(SomeIn({}) != None)
 
+    def test_signature(self):
+        def always_true(x):
+            return True
 
-class SomeWithLenTest(unittest.TestCase):
+        self.assertTrue(str(SomeIn({})) == "SomeIn({})")
+        self.assertTrue(str(SomeIn([1, 2, 3])) == "SomeIn([1, 2, 3])")
+        s = str(SomeIn({"a", "b"}))
+        self.assertTrue(s == "SomeIn({'b', 'a'})" or s == "SomeIn({'a', 'b'})")
+        self.assertTrue(str(SomeIn("abcdefg")) == "SomeIn(abcdefg)")
+
+
+class SomeWithLenTests(unittest.TestCase):
     def test_alias(self):
         self.assertTrue(SomeWithLen is has_len)
 
@@ -246,8 +325,15 @@ class SomeWithLenTest(unittest.TestCase):
         self.assertTrue(SomeWithLen(min_length=1, max_length=2) == [1, 2])
         self.assertTrue(SomeWithLen(min_length=1, max_length=2) != [1, 2, 3])
 
+    def test_signature(self):
+        def always_true(x):
+            return True
 
-class NotSomeTest(unittest.TestCase):
+        # todo: ...
+        # self.assertTrue()
+
+
+class NotSomeTests(unittest.TestCase):
     def test_alias(self):
         self.assertTrue(NotSome is is_not)
 
@@ -260,11 +346,20 @@ class NotSomeTest(unittest.TestCase):
 
         def sum_is_5(x):
             return sum(x) == 5
-        self.assertTrue(NotSome(sum_is_5) == [3,3])
-        self.assertTrue(NotSome(sum_is_5) != [3,2])
+
+        self.assertTrue(NotSome(sum_is_5) == [3, 3])
+        self.assertTrue(NotSome(sum_is_5) != [3, 2])
+
+    def test_signature(self):
+        def always_true(x):
+            return True
+
+        self.assertTrue(str(NotSome()) == "NotSome()")
+        self.assertTrue(str(NotSome(int, float)) == "NotSome(int, float)")
+        self.assertTrue(str(NotSome(int, always_true)) == "NotSome(int, always_true)")
 
 
-class SomeStrTest(unittest.TestCase):
+class SomeStrTests(unittest.TestCase):
     def test_basics(self):
         self.assertTrue(SomeStr() == "abc")
         self.assertTrue(SomeStr() != 42)
@@ -302,19 +397,35 @@ class SomeStrTest(unittest.TestCase):
         self.assertTrue(SomeStr(startswith="py") != " pysome")
         self.assertTrue(SomeStr(startswith="py") != "pxthon")
 
+    def test_signature(self):
+        def always_true(x):
+            return True
 
-class SomeEmailTest(unittest.TestCase):
+        self.assertTrue(str(SomeStr()) == "SomeStr()")
+        self.assertTrue(str(SomeStr(regex="abc")) == "SomeStr(regex=abc)")
+        self.assertTrue(str(SomeStr(pattern="a_c")) == "SomeStr(pattern=a_c)")
+        self.assertTrue(str(SomeStr(endswith="a_c")) == "SomeStr(endswith=a_c)")
+        self.assertTrue(str(SomeStr(startswith="a_c")) == "SomeStr(startswith=a_c)")
+
+
+class SomeEmailTests(unittest.TestCase):
     def test_basics(self):
         self.assertTrue(SomeEmail() == "john.doe@web.com")
         self.assertTrue(SomeEmail() != "john.doeweb.com")
         self.assertTrue(SomeEmail() == "johdo@eweb.com")
         self.assertTrue(SomeEmail() != "j.d@ewebcom")
 
+    def test_signature(self):
+        self.assertTrue(str(SomeEmail()) == "SomeEmail()")
 
-class SomeUuidTest(unittest.TestCase):
+
+class SomeUuidTests(unittest.TestCase):
     def test_basics(self):
         self.assertTrue(SomeUuid() == "3a01a28d-c79a-4bfa-b190-44a454d3cacb")
         self.assertTrue(SomeUuid() == "7de52743-8a1a-4782-9877-b10bf792172f")
         self.assertTrue(SomeUuid() != "7de52743-8a1a-4782-9877-b10bf792172")
         self.assertTrue(SomeUuid() != "de52743-8a1a-4782-9877-b10bf792172f")
         self.assertTrue(SomeUuid() != "not a uuid")
+
+    def test_signature(self):
+        self.assertTrue(str(SomeUuid()) == "SomeUuid()")

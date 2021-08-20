@@ -1,5 +1,5 @@
 from typing import Any
-from pysome import SameState
+from pysome import SameState, ExpectException
 
 
 class expect:
