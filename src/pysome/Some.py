@@ -23,6 +23,7 @@ class Some:
     >>> Some(int) == None
     False
     """
+    last_unequal = ""
 
     def __init__(self, *args: Union[type, Callable, "Some"]):
         self._signature = self.get_signature(*args)
@@ -79,6 +80,7 @@ class Some:
                         "instead")
                 if eq:
                     return True
+        Some.last_unequal = str(self) + " does not equal " + str(other)
         return False
 
     def __str__(self):
