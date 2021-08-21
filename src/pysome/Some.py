@@ -398,6 +398,35 @@ class SomeUuid(SomeStr):
         self._signature = self.get_signature()
 
 
+class SomeObject(Some):
+    """
+    SomeObject equals all obejcts that have the given attributes with the corresponding values
+
+    examples:
+    >>> class Foo:
+    ...     x = 12
+    ...     def func1(self): pass
+    >>> SomeObject() == Foo()
+    True
+    >>> SomeObject(x=Some(int)) == Foo()
+    True
+    >>> SomeObject(x=Some(int), func1=Some()) == Foo()
+    True
+    >>> SomeObject(x=Some(str)) == Foo()
+    False
+    >>> SomeObject(x=Some(str)) == 1
+    False
+    """
+    def __init__(self, *args: Union[type, Callable, "Some"], **kwargs):
+        def validate_some_object(other):
+            for key, value in kwargs.items():
+                if not hasattr(other, key):
+                    return False
+                if value != getattr(other, key):
+                    return False
+            return True
+        super().__init__(AllOf(Some(*args), validate_some_object))
+
 # alias names
 has_len = SomeWithLen
 

@@ -429,3 +429,30 @@ class SomeUuidTests(unittest.TestCase):
 
     def test_signature(self):
         self.assertTrue(str(SomeUuid()) == "SomeUuid()")
+
+
+class SomeObjectTest(unittest.TestCase):
+    def test_basics(self):
+        class Foo1:
+            def __init__(self):
+                self.x = 12
+                self.y = 14
+
+            def func1(self):
+                pass
+
+        expect(Foo1()).to_be(SomeObject(x=Some(int), y=Some(int)))
+        expect(Foo1()).to_be(SomeObject(x=Some(int), y=14))
+        expect(Foo1()).not_to_be(SomeObject(x=Some(int), y=15))
+        expect(Foo1()).not_to_be(SomeObject(x=Some(int), y=15, z=Some()))
+        expect(Foo1()).not_to_be(SomeObject(x=Some(int), y=Some(str)))
+        expect(Foo1).not_to_be(SomeObject(x=Some(int)))
+        expect(Foo1()).to_be(SomeObject(x=Some(), func1=Some()))
+        expect(Foo1()).not_to_be(SomeObject(x=Some(), func1=Some(int)))
+
+        expect(Foo1()).not_to_be(SomeObject(int, x=Some()))
+        expect(Foo1()).to_be(SomeObject(Foo1, x=Some()))
+
+    def test_signature(self):
+        # todo:
+        pass
