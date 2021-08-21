@@ -199,8 +199,9 @@ class TestExpect(unittest.TestCase):
         expect(bar).to_be(Some(Bar)).to_be(Some(Foo)).to_be(Some(Bar)).not_to_be(Some(int))
 
     def test_multiple(self):
-        # todo: multiple data ...
-        pass
+        expect({"a": 12}, {"a": 13}).to_be({"a": Some(int)}).not_to_be({"a": Some(str)})
+        with self.assertRaises(ExpectException):
+            expect({"a": 12}, {"a": "x"}).not_to_be({"a": Some(int)})
 
     def test_error_msg(self):
         # todo: ...

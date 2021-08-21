@@ -326,11 +326,9 @@ class SomeWithLenTests(unittest.TestCase):
         self.assertTrue(SomeWithLen(min_length=1, max_length=2) != [1, 2, 3])
 
     def test_signature(self):
-        def always_true(x):
-            return True
-
-        # todo: ...
-        # self.assertTrue()
+        self.assertTrue(str(SomeWithLen()) == "SomeWithLen()")
+        self.assertTrue(str(SomeWithLen(length=12)) == "SomeWithLen(length=12)")
+        self.assertTrue(str(SomeWithLen(min_length=12)) == "SomeWithLen(min_length=12)")
 
 
 class NotSomeTests(unittest.TestCase):
@@ -454,5 +452,8 @@ class SomeObjectTest(unittest.TestCase):
         expect(Foo1()).to_be(SomeObject(Foo1, x=Some()))
 
     def test_signature(self):
-        # todo:
-        pass
+        class Foo1:
+            pass
+        self.assertTrue(str(SomeObject()) == "SomeObject()")
+        self.assertTrue(str(SomeObject(a=Some(int, str))) == "SomeObject(a=Some(int, str))")
+        self.assertTrue(str(SomeObject(Foo1, a=SomeObject(b=Some(int)))) == "SomeObject(Foo1, a=SomeObject(b=Some(int)))")

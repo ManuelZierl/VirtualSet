@@ -9,19 +9,27 @@ class expect:
     def to_be(self, other):
         for da in self.data:
             if does(da).not_equal(other):
-                raise ExpectException(Some.last_unequal)  # todo: message
+                raise ExpectException(self.format_error_msg())
         return self
 
     def not_to_be(self, other):
         for da in self.data:
             if does(da).equal(other):
-                raise ExpectException(Some.last_unequal)  # todo: message
+                raise ExpectException()
         return self
+
+    @staticmethod
+    def format_error_msg():
+        out = "\n"
+        for ue in Some.unequals:
+            out += f"  - {ue}\n"
+        return out
 
 
 class does:
     def __init__(self, data):
         self.data = data
+        Some.unequals = []
 
     def equal(self, other):
         SameState._start()  # noqa
@@ -31,6 +39,7 @@ class does:
 
     def not_equal(self, other):
         SameState._start()  # noqa
+        Some.unequals = []
         result = other != self.data
         SameState._end()  # noqa
         return result

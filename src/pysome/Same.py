@@ -17,7 +17,7 @@ class Same(Some):
         def validate_same(other):
             return self.state_check(other)
 
-        super().__init__(AllOf(Some(*args), validate_same))  # todo: test
+        super().__init__(AllOf(Some(*args), validate_same))
 
     def state_check(self, other):
         if SameState._allow[self.state_name] is False:  # noqa

@@ -23,7 +23,7 @@ class Some:
     >>> Some(int) == None
     False
     """
-    last_unequal = ""
+    unequals = []
 
     def __init__(self, *args: Union[type, Callable, "Some"]):
         self._signature = self.get_signature(*args)
@@ -80,7 +80,7 @@ class Some:
                         "instead")
                 if eq:
                     return True
-        Some.last_unequal = str(self) + " does not equal " + str(other)
+        Some.unequals.append(f"{self} does not equal {other}")
         return False
 
     def __str__(self):
@@ -150,8 +150,6 @@ class SomeIterable(Some):
     >>> SomeIterable(str) == (1, 3, 4)
     False
     """
-
-    # todo: have a look why linting is not getting it here ...
     def __init__(self, *args: Union[type, Callable, "Some"], length=None, is_type: type = Iterable):
         if not isinstance(is_type, type):
             raise InvalidArgument(f"is_type must be a type but is {is_type}")
@@ -286,6 +284,14 @@ class SomeWithLen(Some):
             return True
 
         super().__init__(len_validator)
+        kwargs = {}
+        if length is not None:
+            kwargs["length"] = length
+        if min_length is not None:
+            kwargs["min_length"] = min_length
+        if max_length is not None:
+            kwargs["max_length"] = max_length
+        self._signature = self.get_signature(**kwargs)
 
 
 class NotSome(Some):
@@ -417,6 +423,7 @@ class SomeObject(Some):
     >>> SomeObject(x=Some(str)) == 1
     False
     """
+
     def __init__(self, *args: Union[type, Callable, "Some"], **kwargs):
         def validate_some_object(other):
             for key, value in kwargs.items():
@@ -425,7 +432,9 @@ class SomeObject(Some):
                 if value != getattr(other, key):
                     return False
             return True
+
         super().__init__(AllOf(Some(*args), validate_some_object))
+        self._signature = self.get_signature(*args, **kwargs)
 
 # alias names
 has_len = SomeWithLen
