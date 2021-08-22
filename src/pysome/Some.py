@@ -382,7 +382,7 @@ class SomeEmail(SomeStr):
     """
 
     def __init__(self):
-        super().__init__(regex="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        super().__init__(regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
         self._signature = self.get_signature()
 
 
@@ -436,6 +436,7 @@ class SomeObject(Some):
         super().__init__(AllOf(Some(*args), validate_some_object))
         self._signature = self.get_signature(*args, **kwargs)
 
+
 # alias names
 has_len = SomeWithLen
 
@@ -446,3 +447,4 @@ is_not = NotSome
 is_email = SomeEmail
 
 is_uuid = SomeUuid
+

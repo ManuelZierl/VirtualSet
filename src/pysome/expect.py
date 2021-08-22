@@ -43,5 +43,3 @@ class does:
         result = other != self.data
         SameState._end()  # noqa
         return result
-
-

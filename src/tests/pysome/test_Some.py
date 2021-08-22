@@ -120,8 +120,8 @@ class AllOfTests(unittest.TestCase):
 class SomeOrNoneTests(unittest.TestCase):
     def test_basics(self):
         self.assertTrue(SomeOrNone() == 3)
-        self.assertTrue(SomeOrNone() == None)
-        self.assertTrue(SomeOrNone(int) == None)
+        self.assertTrue(SomeOrNone() == None)  # noqa
+        self.assertTrue(SomeOrNone(int) == None)  # noqa
         self.assertTrue(SomeOrNone(int) != "ab")
         self.assertTrue(SomeOrNone(str) == "ab")
 
@@ -274,12 +274,12 @@ class SomeInTests(unittest.TestCase):
         with self.assertRaises(InvalidArgument):
             _ = SomeIn(42)
 
-    def test_empyt(self):
+    def test_empty(self):
         with self.assertRaises(TypeError):
             self.assertTrue(SomeIn() == 1)
 
         self.assertTrue(SomeIn({}) != 0)
-        self.assertTrue(SomeIn({}) != None)
+        self.assertTrue(SomeIn({}) != None)  # noqa
 
     def test_signature(self):
         def always_true(x):
@@ -395,6 +395,16 @@ class SomeStrTests(unittest.TestCase):
         self.assertTrue(SomeStr(startswith="py") != " pysome")
         self.assertTrue(SomeStr(startswith="py") != "pxthon")
 
+    def test_invalid_arguments(self):
+        with self.assertRaises(InvalidArgument):
+            _ = SomeStr(regex=12)
+        with self.assertRaises(InvalidArgument):
+            _ = SomeStr(pattern=12)
+        with self.assertRaises(InvalidArgument):
+            _ = SomeStr(startswith=12)
+        with self.assertRaises(InvalidArgument):
+            _ = SomeStr(endswith=12)
+
     def test_signature(self):
         def always_true(x):
             return True
@@ -456,4 +466,5 @@ class SomeObjectTest(unittest.TestCase):
             pass
         self.assertTrue(str(SomeObject()) == "SomeObject()")
         self.assertTrue(str(SomeObject(a=Some(int, str))) == "SomeObject(a=Some(int, str))")
-        self.assertTrue(str(SomeObject(Foo1, a=SomeObject(b=Some(int)))) == "SomeObject(Foo1, a=SomeObject(b=Some(int)))")
+        self.assertTrue(str(SomeObject(Foo1, a=SomeObject(b=Some(int)))) == "SomeObject(Foo1, a=SomeObject(b=Some("
+                                                                            "int)))")
