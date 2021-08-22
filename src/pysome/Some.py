@@ -447,4 +447,3 @@ is_not = NotSome
 is_email = SomeEmail
 
 is_uuid = SomeUuid
-
