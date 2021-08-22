@@ -23,7 +23,10 @@ class Some:
     >>> Some(int) == None
     False
     """
+    unequals = []
+
     def __init__(self, *args: Union[type, Callable, "Some"]):
+        self._signature = self.get_signature(*args)
         self.types = []
         if args:
             for arg in args:
@@ -43,6 +46,22 @@ class Some:
         else:
             self.types = None
 
+    @classmethod
+    def get_signature(cls, *args, **kwargs):
+        signs = []
+        for arg in args:
+            if isinstance(arg, type) or callable(arg):
+                signs.append(arg.__name__)
+            else:
+                signs.append(str(arg))
+
+        for key, val in kwargs.items():
+            if isinstance(val, type) or callable(val):
+                signs.append(f"{key}={val.__name__}")
+            else:
+                signs.append(f"{key}={val}")
+        return cls.__name__ + "(" + ", ".join(signs) + ")"
+
     def __eq__(self, other: Any):
         if self.types is None:
             return True
@@ -61,7 +80,11 @@ class Some:
                         "instead")
                 if eq:
                     return True
+        Some.unequals.append(f"{self} does not equal {other}")
         return False
+
+    def __str__(self):
+        return self._signature
 
 
 class AllOf(Some):
@@ -76,10 +99,13 @@ class AllOf(Some):
     >>> AllOf(object, str) == "abc"
     True
     """
+
     def __init__(self, *args: Union[type, Callable, "Some"]):
         def validate_all(other):
             return all(Some(arg) == other for arg in args)
+
         super().__init__(validate_all)
+        self._signature = self.get_signature(*args)
 
 
 class SomeOrNone(Some):
@@ -98,13 +124,16 @@ class SomeOrNone(Some):
     >>> SomeOrNone(int) == None
     True
     """
+
     def __init__(self, *args: Union[type, Callable, "Some"]):
         def is_none(x):
             return x is None
+
         if args:
             super().__init__(*args, is_none)
         else:
             super().__init__()
+        self._signature = self.get_signature(*args)
 
 
 class SomeIterable(Some):
@@ -121,7 +150,10 @@ class SomeIterable(Some):
     >>> SomeIterable(str) == (1, 3, 4)
     False
     """
-    def __init__(self, *args: Union[type, Callable, "Some"], length=None, is_type=Iterable):
+    def __init__(self, *args: Union[type, Callable, "Some"], length=None, is_type: type = Iterable):
+        if not isinstance(is_type, type):
+            raise InvalidArgument(f"is_type must be a type but is {is_type}")
+
         def some_iterable_validator(others):
             if not isinstance(others, is_type):
                 return False
@@ -130,7 +162,14 @@ class SomeIterable(Some):
             some = Some(*args)
 
             return all(some == x for x in others)
+
         super().__init__(some_iterable_validator)
+        kwargs = {}
+        if length is not None:
+            kwargs["length"] = length
+        if is_type is not Iterable:
+            kwargs["is_type"] = is_type
+        self._signature = self.get_signature(*args, **kwargs)
 
 
 class SomeList(SomeIterable):
@@ -145,8 +184,13 @@ class SomeList(SomeIterable):
     >>> SomeList() == (1, 2)
     False
     """
+
     def __init__(self, *args: Union[type, Callable, "Some"], length=None):
         super().__init__(*args, length=length, is_type=list)
+        kwargs = {}
+        if length is not None:
+            kwargs["length"] = length
+        self._signature = self.get_signature(*args, **kwargs)
 
 
 class SomeDict(Some):
@@ -167,6 +211,7 @@ class SomeDict(Some):
     >>> SomeDict({"a": Some(int)}) == {"a": {"a1": 1, "a2": 2}, "b": 3}
     False
     """
+
     def __init__(self, partial_dict: dict = None, **kwargs):
         if partial_dict is None:
             partial_dict = {}
@@ -183,6 +228,7 @@ class SomeDict(Some):
             return True
 
         super().__init__(some_dict_validator)
+        self._signature = self.get_signature(**partial_dict)
 
 
 class SomeIn(Some):
@@ -206,6 +252,7 @@ class SomeIn(Some):
             return other in container
 
         super().__init__(is_in_validator)
+        self._signature = self.get_signature(container)
 
 
 class SomeWithLen(Some):
@@ -237,6 +284,14 @@ class SomeWithLen(Some):
             return True
 
         super().__init__(len_validator)
+        kwargs = {}
+        if length is not None:
+            kwargs["length"] = length
+        if min_length is not None:
+            kwargs["min_length"] = min_length
+        if max_length is not None:
+            kwargs["max_length"] = max_length
+        self._signature = self.get_signature(**kwargs)
 
 
 class NotSome(Some):
@@ -251,6 +306,7 @@ class NotSome(Some):
     >>> NotSome(int, str) == 5.6
     True
     """
+
     def __init__(self, *args: Union[type, Callable, "Some"]):
         super().__init__(*args)
 
@@ -270,6 +326,7 @@ class SomeStr(Some):
     >>> SomeStr(regex="a[0-9]z") == "axz"
     False
     """
+
     def __init__(self, regex=None, pattern=None, endswith=None, startswith=None):
         if not SomeOrNone(str) == regex:
             raise InvalidArgument("regex must be of type str or None")
@@ -298,7 +355,19 @@ class SomeStr(Some):
             if startswith is not None:
                 return other.startswith(startswith)
             return True
+
         super().__init__(some_str_validator)
+        kwargs = {}
+
+        if regex is not None:
+            kwargs["regex"] = regex
+        if pattern is not None:
+            kwargs["pattern"] = pattern
+        if endswith is not None:
+            kwargs["endswith"] = endswith
+        if startswith is not None:
+            kwargs["startswith"] = startswith
+        self._signature = self.get_signature(**kwargs)
 
 
 class SomeEmail(SomeStr):
@@ -311,8 +380,10 @@ class SomeEmail(SomeStr):
     >>> SomeEmail() == "not.a@emailadress"
     False
     """
+
     def __init__(self):
-        super().__init__(regex="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        super().__init__(regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        self._signature = self.get_signature()
 
 
 class SomeUuid(SomeStr):
@@ -327,8 +398,10 @@ class SomeUuid(SomeStr):
     >>> SomeUuid() == "not a uuid"
     False
     """
+
     def __init__(self):
         super().__init__(regex=r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
+        self._signature = self.get_signature()
 
 
 class SomeObject(Some):
@@ -350,6 +423,7 @@ class SomeObject(Some):
     >>> SomeObject(x=Some(str)) == 1
     False
     """
+
     def __init__(self, *args: Union[type, Callable, "Some"], **kwargs):
         def validate_some_object(other):
             for key, value in kwargs.items():
@@ -358,7 +432,10 @@ class SomeObject(Some):
                 if value != getattr(other, key):
                     return False
             return True
+
         super().__init__(AllOf(Some(*args), validate_some_object))
+        self._signature = self.get_signature(*args, **kwargs)
+
 
 # alias names
 has_len = SomeWithLen

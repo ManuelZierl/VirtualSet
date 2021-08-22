@@ -41,7 +41,7 @@ class TestExpect(unittest.TestCase):
             }
         })
         response["menu"]["items"].append(9.3)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ExpectException):
             expect(response).to_be({
                 "menu": {
                     "header": "SVG Viewer",
@@ -183,7 +183,7 @@ class TestExpect(unittest.TestCase):
 
         expect(5).to_be(Some(int))
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ExpectException):
             expect(5).to_be(Some(int)).to_be(Some(not_5))
 
         class Foo:
@@ -197,3 +197,18 @@ class TestExpect(unittest.TestCase):
 
         expect(foo).to_be(Some(Foo)).not_to_be(Some(Bar))
         expect(bar).to_be(Some(Bar)).to_be(Some(Foo)).to_be(Some(Bar)).not_to_be(Some(int))
+
+    def test_multiple(self):
+        expect({"a": 12}, {"a": 13}).to_be({"a": Some(int)}).not_to_be({"a": Some(str)})
+        with self.assertRaises(ExpectException):
+            expect({"a": 12}, {"a": "x"}).not_to_be({"a": Some(int)})
+
+    def test_error_msg(self):
+        # todo: ...
+        pass
+
+
+class TestDoes(unittest.TestCase):
+    def test_basics(self):
+        # todo:
+        pass

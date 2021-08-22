@@ -1,6 +1,6 @@
 import unittest
 
-from pysome import expect, Same, SomeDict, Some, SameOutsideExpect, NotSame, SomeList, AllOf
+from pysome import expect, Same, SomeDict, Some, SameOutsideExpect, NotSame, SomeList, AllOf, default_name
 
 
 class SameTest(unittest.TestCase):
@@ -92,6 +92,10 @@ class SameTest(unittest.TestCase):
             "b": SomeList(),
             "c": Same(sum_to_6),
         })
+
+    def test_foo(self):
+        d = {default_name}
+        expect([1, 1]).to_be([Same(), Same()])
 
 
 class NotSameTest(unittest.TestCase):

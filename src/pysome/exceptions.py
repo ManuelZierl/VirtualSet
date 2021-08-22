@@ -6,6 +6,10 @@ class MustReturnBool(PySomeException):
     pass
 
 
+class ExpectException(PySomeException):
+    pass
+
+
 class InvalidArgument(PySomeException):
     pass
 

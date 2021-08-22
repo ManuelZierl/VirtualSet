@@ -1,6 +1,5 @@
 class default_name:
-    def __hash__(self):
-        return hash(str(self))
+    pass
 
 
 class SameState:
