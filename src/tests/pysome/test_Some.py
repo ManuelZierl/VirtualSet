@@ -141,8 +141,8 @@ class SomeIterableTests(unittest.TestCase):
         self.assertTrue(SomeIterable() != 14)
         self.assertTrue(SomeIterable() == "abc")
 
-        self.assertTrue(SomeIterable(int, str) == [4, "a", 3, 0])
-        self.assertTrue(SomeIterable(int, str) != [4, "a", None, 0])
+        self.assertTrue(SomeIterable(Some(int, str)) == [4, "a", 3, 0])
+        self.assertTrue(SomeIterable(Some(int, str)) != [4, "a", None, 0])
 
         def a_is_1(x):
             if not hasattr(x, "__contains__"):
@@ -151,10 +151,10 @@ class SomeIterableTests(unittest.TestCase):
                 return False
             return x["a"] == 1
 
-        self.assertTrue(SomeIterable(a_is_1) == [{"a": 1}, {"b": 12, "a": 1}])
-        self.assertTrue(SomeIterable(a_is_1) != [{"a": 1}, {"b": 12, "a": 2}])
-        self.assertTrue(SomeIterable(a_is_1) != [{"c": 1}, {"b": 12, "a": 1}])
-        self.assertTrue(SomeIterable(a_is_1) != [{"c": 1}, "a1"])
+        self.assertTrue(SomeIterable(Some(a_is_1)) == [{"a": 1}, {"b": 12, "a": 1}])
+        self.assertTrue(SomeIterable(Some(a_is_1)) != [{"a": 1}, {"b": 12, "a": 2}])
+        self.assertTrue(SomeIterable(Some(a_is_1)) != [{"c": 1}, {"b": 12, "a": 1}])
+        self.assertTrue(SomeIterable(Some(a_is_1)) != [{"c": 1}, "a1"])
 
         class Foo:
             def __contains__(self, item):
@@ -163,7 +163,7 @@ class SomeIterableTests(unittest.TestCase):
             def __getitem__(self, item):
                 return 1
 
-        self.assertTrue(SomeIterable(a_is_1) == [{"a": 1, "x": 4}, Foo(), Foo()])
+        self.assertTrue(SomeIterable(Some(a_is_1)) == [{"a": 1, "x": 4}, Foo(), Foo()])
 
     def test_length(self):
         self.assertTrue(SomeIterable(length=3) == (1, 2, 3))
@@ -181,13 +181,14 @@ class SomeIterableTests(unittest.TestCase):
         def always_true(x):
             return True
 
-        self.assertTrue(str(SomeIterable()) == "SomeIterable()")
-        self.assertTrue(str(SomeIterable(int)) == "SomeIterable(int)")
-        self.assertTrue(str(SomeIterable(int, always_true)) == "SomeIterable(int, always_true)")
+        self.assertTrue(str(SomeIterable()) == "SomeIterable(Some())")
+        self.assertTrue(str(SomeIterable(Some(int))) == "SomeIterable(Some(int))")
+        self.assertTrue(str(SomeIterable(Some(int, always_true))) == "SomeIterable(Some(int, always_true))")
         self.assertTrue(str(SomeIterable(Some(str))) == "SomeIterable(Some(str))")
-        self.assertTrue(str(SomeIterable(int, length=12)) == "SomeIterable(int, length=12)")
+        self.assertTrue(str(SomeIterable(Some(int), length=12)) == "SomeIterable(Some(int), length=12)")
         self.assertTrue(
-            str(SomeIterable(int, length=12, is_type=tuple)) == "SomeIterable(int, length=12, is_type=tuple)")
+            str(SomeIterable(Some(int), length=12, is_type=tuple)) ==
+            "SomeIterable(Some(int), length=12, is_type=tuple)")
 
     def test_invalid_is_type(self):
         _ = SomeIterable()
@@ -195,6 +196,28 @@ class SomeIterableTests(unittest.TestCase):
 
         with self.assertRaises(InvalidArgument):
             _ = SomeIterable(is_type=12)
+
+    def test_other_types(self):
+        self.assertTrue({
+            "users": [
+                {"id": 1, "name": "anna"},
+                {"id": 2, "name": "bert"},
+                {"id": 3, "name": "claus"},
+                {"id": 4, "name": "diana"},
+            ]
+        } == {
+            "users": SomeIterable({"id": Some(int), "name": Some(str)})
+        })
+        self.assertFalse({
+            "users": [
+                {"id": 1, "name": "anna"},
+                {"id": 2, "name": "bert"},
+                {"id": "3", "name": "claus"},
+                {"id": 4, "name": "diana"},
+            ]
+        } == {
+            "users": SomeIterable({"id": Some(int), "name": Some(str)})
+        })
 
 
 class SomeListTests(unittest.TestCase):
@@ -210,8 +233,8 @@ class SomeListTests(unittest.TestCase):
         self.assertTrue(SomeList(length=4) != [1, 2, 3])
 
     def test_all(self):
-        self.assertTrue(SomeList(int) == [1, 2, 3])
-        self.assertTrue(SomeList(int) != [1, 2.5, 3])
+        self.assertTrue(SomeList(Some(int)) == [1, 2, 3])
+        self.assertTrue(SomeList(Some(int)) != [1, 2.5, 3])
 
         self.assertTrue(SomeList(SomeList()) == [["a", 2], [4.5, 4.2]])
         self.assertTrue(SomeList(SomeList()) != [[], 5])
@@ -220,10 +243,10 @@ class SomeListTests(unittest.TestCase):
         def always_true(x):
             return True
 
-        self.assertTrue(str(SomeList()) == "SomeList()")
-        self.assertTrue(str(SomeList(int, str)) == "SomeList(int, str)")
-        self.assertTrue(str(SomeList(int, always_true)) == "SomeList(int, always_true)")
-        self.assertTrue(str(SomeList(length=14.5)) == "SomeList(length=14.5)")
+        self.assertTrue(str(SomeList()) == "SomeList(Some())")
+        self.assertTrue(str(SomeList(Some(int, str))) == "SomeList(Some(int, str))")
+        self.assertTrue(str(SomeList(Some(int, always_true))) == "SomeList(Some(int, always_true))")
+        self.assertTrue(str(SomeList(length=14.5)) == "SomeList(Some(), length=14.5)")
 
 
 class SomeDictTests(unittest.TestCase):
@@ -254,8 +277,8 @@ class SomeDictTests(unittest.TestCase):
         self.assertTrue(str(SomeDict()) == "SomeDict()")
         self.assertTrue(str(SomeDict({"a": Some(int), "b": Some(str)})) == "SomeDict(a=Some(int), b=Some(str))")
         self.assertTrue(str(SomeDict({"a": 12, "b": int}, c=SomeOrNone())) == "SomeDict(a=12, b=int, c=SomeOrNone())")
-        self.assertTrue(
-            str(SomeDict(a=SomeList(int, str, always_true))) == "SomeDict(a=SomeList(int, str, always_true))")
+        self.assertTrue(str(SomeDict(a=SomeList(Some(int, str, always_true)))) ==
+                        "SomeDict(a=SomeList(Some(int, str, always_true)))")
 
 
 class SomeInTests(unittest.TestCase):

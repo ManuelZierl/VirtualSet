@@ -45,6 +45,7 @@ expect(api_response).to_be({
         "tags": SomeList(
             SomeDict(id=Some(int))
         ),
+        "auth_token": Some(str),
         "randomInt": Some(int),
         "labels": Some(dict),
     }
@@ -101,8 +102,8 @@ but there are some useful pre-implemented subclasses of `Some`:
 | [Some()](#Some) |   |  `*args`  | equals all objects with any given type or function
 | [AllOf()](#AllOf) |   | `*args`  | equals only an object if all given arguments are fulfilled
 | [SomeOrNone()](#SomeOrNone) |   | `*args`  | same as `Some` but also equals None
-| [SomeIterable()](#SomeIterable)   |   | `*args`, `length = None`, `is_type = None`  | equals all Iterables under given conditions
-| [SomeList()](#SomeList)           |   | `*args`, `length = None`, `is_type = None`   | equals all Lists under given conditions
+| [SomeIterable()](#SomeIterable)   |   | `arg`, `length = None`, `is_type = None`  | equals all Iterables under given conditions
+| [SomeList()](#SomeList)           |   | `arg`, `length = None`, `is_type = None`   | equals all Lists under given conditions
 | [SomeDict()](#SomeDict)           |   | `partial_dict: dict = None`, `**kwargs`  | equals all dicts that have given subset
 | [SomeIn()](#SomeIn)               | `is_in`  | container  | equals all objects that are in the given container
 | [SomeWithLen()](#SomeWithLen)     | `has_len` |  `length = None`, `min_length = None`, `max_length = None` | equals al objects that fulfill given length conditions
@@ -156,13 +157,13 @@ expect({
 ### <a name="SomeIterable"></a>SomeIterable
 `SomeIterable()` equals all objects that are iterable where every element of the iterable must fulfill the given conditions.
 ```python
-from pysome import SomeIterable, expect
+from pysome import SomeIterable, expect, Some
 
-expect([1, 2, 3]).to_be(SomeIterable(int))
-expect([1, 2.5, 3]).not_to_be(SomeIterable(int))
+expect([1, 2, 3]).to_be(SomeIterable(Some(int)))
+expect([1, 2.5, 3]).not_to_be(SomeIterable(Some(int)))
 
 # you can also build nested structure
-expect([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).to_be(SomeIterable(SomeIterable(int)))
+expect([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).to_be(SomeIterable(SomeIterable(Some(int))))
 ```
 ### <a name="SomeList"></a>SomeList
 `SomeList()` works exactly the same as `SomeIterable` with the only difference that the Iterable must be of type `list` 
