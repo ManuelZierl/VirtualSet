@@ -232,8 +232,8 @@ class SomeListTests(unittest.TestCase):
         self.assertTrue(SomeList(length=4) != [1, 2, 3])
 
     def test_all(self):
-        self.assertTrue(SomeList(int) == [1, 2, 3])
-        self.assertTrue(SomeList(int) != [1, 2.5, 3])
+        self.assertTrue(SomeList(Some(int)) == [1, 2, 3])
+        self.assertTrue(SomeList(Some(int)) != [1, 2.5, 3])
 
         self.assertTrue(SomeList(SomeList()) == [["a", 2], [4.5, 4.2]])
         self.assertTrue(SomeList(SomeList()) != [[], 5])
@@ -242,10 +242,10 @@ class SomeListTests(unittest.TestCase):
         def always_true(x):
             return True
 
-        self.assertTrue(str(SomeList()) == "SomeList()")
-        self.assertTrue(str(SomeList(int, str)) == "SomeList(int, str)")
-        self.assertTrue(str(SomeList(int, always_true)) == "SomeList(int, always_true)")
-        self.assertTrue(str(SomeList(length=14.5)) == "SomeList(length=14.5)")
+        self.assertTrue(str(SomeList()) == "SomeList(Some())")
+        self.assertTrue(str(SomeList(Some(int, str))) == "SomeList(Some(int, str))")
+        self.assertTrue(str(SomeList(Some(int, always_true))) == "SomeList(Some(int, always_true))")
+        self.assertTrue(str(SomeList(length=14.5)) == "SomeList(Some(), length=14.5)")
 
 
 class SomeDictTests(unittest.TestCase):
@@ -276,8 +276,8 @@ class SomeDictTests(unittest.TestCase):
         self.assertTrue(str(SomeDict()) == "SomeDict()")
         self.assertTrue(str(SomeDict({"a": Some(int), "b": Some(str)})) == "SomeDict(a=Some(int), b=Some(str))")
         self.assertTrue(str(SomeDict({"a": 12, "b": int}, c=SomeOrNone())) == "SomeDict(a=12, b=int, c=SomeOrNone())")
-        self.assertTrue(
-            str(SomeDict(a=SomeList(int, str, always_true))) == "SomeDict(a=SomeList(int, str, always_true))")
+        self.assertTrue(str(SomeDict(a=SomeList(Some(int, str, always_true)))) ==
+                        "SomeDict(a=SomeList(Some(int, str, always_true)))")
 
 
 class SomeInTests(unittest.TestCase):

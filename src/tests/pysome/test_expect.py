@@ -37,7 +37,7 @@ class TestExpect(unittest.TestCase):
         expect(response).to_be({
             "menu": {
                 "header": "SVG Viewer",
-                "items": SomeList(str, int)
+                "items": SomeList(Some(str, int))
             }
         })
         response["menu"]["items"].append(9.3)
@@ -45,7 +45,7 @@ class TestExpect(unittest.TestCase):
             expect(response).to_be({
                 "menu": {
                     "header": "SVG Viewer",
-                    "items": SomeList(str, int)
+                    "items": SomeList(Some(str, int))
                 }
             })
 
@@ -108,7 +108,7 @@ class TestExpect(unittest.TestCase):
 
         expect(response).to_be({
             "menu": {
-                "tags": SomeList(dict)
+                "tags": SomeList(Some(dict))
             }
         })
         expect(response).to_be({
@@ -206,6 +206,34 @@ class TestExpect(unittest.TestCase):
     def test_error_msg(self):
         # todo: ...
         pass
+
+    def test_template(self):
+        template = SomeList({"id": Some(int), "name": Some(str)})
+        expect({
+            "users": [
+                {"id": 1, "name": "anna"},
+                {"id": 2, "name": "bert"},
+                {"id": 3, "name": "claus"},
+                {"id": 4, "name": "diana"},
+            ],
+            "others": {
+                "counter": 3,
+                "list": [
+                    {"id": 12, "name": "alice"},
+                    {"id": 13, "name": "bob"},
+                    {"id": 14, "name": "clair"},
+                ]
+            },
+            "special": [{"id": 99, "name": "Mr. X"}],
+        }).to_be({
+            "users": template,
+            "others": {
+                "counter": Some(int),
+                "list": template
+            },
+            "special": template
+
+        })
 
 
 class TestDoes(unittest.TestCase):
