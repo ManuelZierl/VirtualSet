@@ -187,7 +187,8 @@ class SomeIterableTests(unittest.TestCase):
         self.assertTrue(str(SomeIterable(Some(str))) == "SomeIterable(Some(str))")
         self.assertTrue(str(SomeIterable(Some(int), length=12)) == "SomeIterable(Some(int), length=12)")
         self.assertTrue(
-            str(SomeIterable(Some(int), length=12, is_type=tuple)) == "SomeIterable(Some(int), length=12, is_type=tuple)")
+            str(SomeIterable(Some(int), length=12, is_type=tuple)) ==
+            "SomeIterable(Some(int), length=12, is_type=tuple)")
 
     def test_invalid_is_type(self):
         _ = SomeIterable()
