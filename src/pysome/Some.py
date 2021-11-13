@@ -145,12 +145,12 @@ class SomeIterable(Some):
     True
     >>> SomeIterable() == 12
     False
-    >>> SomeIterable(int) == (1, 2, 4)
+    >>> SomeIterable(Some(int)) == (1, 2, 4)
     True
-    >>> SomeIterable(str) == (1, 3, 4)
+    >>> SomeIterable(Some(str)) == (1, 3, 4)
     False
     """
-    def __init__(self, *args: Union[type, Callable, "Some"], length=None, is_type: type = Iterable):
+    def __init__(self, arg: Any = Some(), length=None, is_type: type = Iterable):
         if not isinstance(is_type, type):
             raise InvalidArgument(f"is_type must be a type but is {is_type}")
 
@@ -159,9 +159,7 @@ class SomeIterable(Some):
                 return False
             if length is not None and len(others) != length:
                 return False
-            some = Some(*args)
-
-            return all(some == x for x in others)
+            return all(arg == x for x in others)
 
         super().__init__(some_iterable_validator)
         kwargs = {}
@@ -169,7 +167,7 @@ class SomeIterable(Some):
             kwargs["length"] = length
         if is_type is not Iterable:
             kwargs["is_type"] = is_type
-        self._signature = self.get_signature(*args, **kwargs)
+        self._signature = self.get_signature(arg, **kwargs)
 
 
 class SomeList(SomeIterable):
@@ -185,12 +183,12 @@ class SomeList(SomeIterable):
     False
     """
 
-    def __init__(self, *args: Union[type, Callable, "Some"], length=None):
-        super().__init__(*args, length=length, is_type=list)
+    def __init__(self, arg: Any = Some(), length=None):
+        super().__init__(arg, length=length, is_type=list)
         kwargs = {}
         if length is not None:
             kwargs["length"] = length
-        self._signature = self.get_signature(*args, **kwargs)
+        self._signature = self.get_signature(arg, **kwargs)
 
 
 class SomeDict(Some):
